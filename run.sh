@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PATH=$PATH:/home/group8/biomim_8/bin/arduino-cli
+export PATH=$PATH:/home/group8/bin/arduino-cli
 
 cd /home/group8/biomim_8 || { echo "Failed to change directory"; exit 1; }
 
