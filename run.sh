@@ -6,5 +6,5 @@ echo "Running Pi code..."
 arduino-cli compile --fqbn arduino:avr:uno arduino_code/wash_loop.ino
 arduino-cli upload -p /dev/ttyUSB0 --fqbn arduino:avr:uno arduino_code/wash_loop.ino
 # Example: Python program
-python3 main.py
+python3 arduino_control.py
 
