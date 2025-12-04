@@ -1,0 +1,13 @@
+2025-12-04 14:03:04,846 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://145.109.32.139:5000
+2025-12-04 14:03:04,846 INFO: [33mPress CTRL+C to quit[0m
+2025-12-04 14:03:21,720 INFO: Starting the program...
+2025-12-04 14:03:21,722 INFO: Running Pi code...
+Arduino code compilation failed
+
+2025-12-04 14:03:21,722 ERROR: /home/group8/biomim_8/run.sh: line 8: arduino-cli: command not found
+
+2025-12-04 14:03:21,722 ERROR: Program failed to start. Check log for details.
+2025-12-04 14:03:21,723 INFO: 145.109.45.90 - - [04/Dec/2025 14:03:21] "[35m[1mPOST /run HTTP/1.1[0m" 500 -
