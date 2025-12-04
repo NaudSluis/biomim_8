@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH=$PATH:/home/group8/biomim_8/bin/arduino-cli
+
 cd /home/group8/biomim_8 || { echo "Failed to change directory"; exit 1; }
 
 echo "Running Pi code..."
