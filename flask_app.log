@@ -29,3 +29,35 @@ Arduino code compilation failed
 
 2025-12-04 14:49:59,632 ERROR: Program failed to start. Check log for details.
 2025-12-04 14:49:59,633 INFO: 145.109.45.90 - - [04/Dec/2025 14:49:59] "[35m[1mPOST /run HTTP/1.1[0m" 500 -
+2025-12-04 14:57:17,627 INFO: Starting the program...
+2025-12-04 14:57:17,629 INFO: Running Pi code...
+Arduino code compilation failed
+
+2025-12-04 14:57:17,629 ERROR: /home/group8/biomim_8/run.sh: line 10: arduino-cli: command not found
+
+2025-12-04 14:57:17,629 ERROR: Program failed to start. Check log for details.
+2025-12-04 14:57:17,629 INFO: 145.109.45.90 - - [04/Dec/2025 14:57:17] "[35m[1mPOST /run HTTP/1.1[0m" 500 -
+2025-12-04 15:00:29,290 INFO: Starting the program...
+2025-12-04 15:00:29,599 INFO: Running Pi code...
+Arduino code compilation failed
+
+2025-12-04 15:00:29,599 ERROR: Can't open sketch: main file missing from sketch: /home/group8/biomim_8/arduino_code/arduino_code.ino
+
+2025-12-04 15:00:29,599 ERROR: Program failed to start. Check log for details.
+2025-12-04 15:00:29,599 INFO: 145.109.45.90 - - [04/Dec/2025 15:00:29] "[35m[1mPOST /run HTTP/1.1[0m" 500 -
+2025-12-04 15:08:22,708 INFO: Starting the program...
+2025-12-04 15:08:22,718 INFO: Running Pi code...
+Arduino code compilation failed
+
+2025-12-04 15:08:22,718 ERROR: Can't open sketch: main file missing from sketch: /home/group8/biomim_8/arduino_code/arduino_code.ino
+
+2025-12-04 15:08:22,718 ERROR: Program failed to start. Check log for details.
+2025-12-04 15:08:22,718 INFO: 145.109.45.90 - - [04/Dec/2025 15:08:22] "[35m[1mPOST /run HTTP/1.1[0m" 500 -
+2025-12-04 15:11:05,010 INFO: Starting the program...
+2025-12-04 15:11:05,020 INFO: Running Pi code...
+Arduino code compilation failed
+
+2025-12-04 15:11:05,020 ERROR: Can't open sketch: no such file or directory: /home/group8/biomim_8/arduino_code/wash_loop
+
+2025-12-04 15:11:05,020 ERROR: Program failed to start. Check log for details.
+2025-12-04 15:11:05,021 INFO: 145.109.45.90 - - [04/Dec/2025 15:11:05] "[35m[1mPOST /run HTTP/1.1[0m" 500 -
