@@ -75,6 +75,32 @@ def on_release(key):
             
     except AttributeError:
         print(f"Special key pressed: {key}")
+
+def up():
+    # motor1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+    # motor2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+    y_axis += 1
+    print('forward')
+    time.sleep(0.05)
+
+def down():
+    # motor1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+    # motor2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+    y_axis -= 1
+    print('backward')
+    time.sleep(0.05) 
+
+def right():
+    # motor3.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+    x_axis += 1
+    print('right')
+    time.sleep(0.05) 
+
+def left():   
+    # motor3.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+    x_axis -= 1
+    print('left')
+    time.sleep(0.05) 
     
 def motor_control_loop():
     print("Motor control thread started.")
@@ -82,30 +108,15 @@ def motor_control_loop():
     global y_axis
     while True:
         if is_moving_forward:
-            # motor1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-            # motor2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-            y_axis += 1
-            print('forward')
-            time.sleep(0.05)
-            
+            up()
         elif is_moving_down:
-            # motor1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-            # motor2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-            y_axis -= 1
-            print('backward')
-            time.sleep(0.05) 
+            down()
             
         elif is_moving_right:
-            # motor3.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-            x_axis += 1
-            print('right')
-            time.sleep(0.05) 
+            right()
 
         elif is_moving_left:
-            # motor3.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-            x_axis -= 1
-            print('left')
-            time.sleep(0.05) 
+            left()
         else:
             # If not moving, still sleep briefly to prevent 100% CPU usage
             time.sleep(0.05)

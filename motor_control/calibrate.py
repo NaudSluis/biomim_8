@@ -2,8 +2,18 @@ import json
 import manual
 from manual import start_manual_control
 
+def move_to_home():
+    # while home_x != pressed:
+    #   left()
+    # while home_y != pressed:
+    #   down()
+    return #this is place holder now to avoid error
+
 def reset_manual_state():
     """Resets the step counters in the 'manual' module before starting."""
+    #Move to home first
+    move_to_home()
+
     manual.x_axis = 0
     manual.y_axis = 0
 
