@@ -1,4 +1,6 @@
 # imports from other files
+from motor_control.calibrate import calibrate
+from motor_control.manual import start_manual_control
 
 
 def main(answer:str):
@@ -7,14 +9,12 @@ def main(answer:str):
         return answer
         # upload_arduino_code()
     elif answer == 'c':
-        return answer
-        # functions to calibrate
+        calibrate()
     elif answer == 't':
         return answer
         # functions to test
     elif answer == 'm':
-        # functions to controll manually
-        return answer
+        start_manual_control()
 
     return
 

@@ -1,10 +1,17 @@
+"""This file can be used for calibration. Some functions from manual.py are not used to make sure you cannot
+calibrate when just using manual control."""
+
 import json
 import manual
-from manual import start_manual_control
+from manual import on_release, motor_control_loop
 from pynput import keyboard
 import time
+import threading
 
 def move_to_home():
+    """
+    Resets to the home position
+    """
     # while home_x != pressed:
     #   left()
     # while home_y != pressed:
@@ -27,13 +34,62 @@ def reset_manual_state():
 
     print("Moved to home")
 
+def dump_to_json(x_axis, y_axis):
+    """
+    Puts saved positions in calibration_info.json
+    
+    :param x_axis: Number of motor steps on the x-axis
+    :param y_axis: Number of motor steps on the y-axis
+    """""
+    coords = {"end position x":x_axis, "end position y":y_axis}
+
+    with open('calibration_info.json', 'w') as fp:
+        json.dump(coords, fp)
+
+
+def on_press_calibration(key):
+    """
+    Callback function that is executed whenever a key is released. Functions and variables 
+    from manual.py are used to enusre uniformity. Still, on_press from manual is not used
+    so that you cannot (accidentally) save a calibration posistion in manual control. 
+    """
+    
+    if key == keyboard.Key.esc:
+        return False 
+    elif key == keyboard.Key.enter:
+        # Call the save function using the current global values
+        # Since dump_to_json uses the global axis variables, we can pass them.
+        dump_to_json(manual.x_axis, manual.y_axis)
+        print("Position is saved, exiting calibration mode...")
+        time.sleep(1)
+        return False
+
+    if key.char == 'w':
+        manual.is_moving_forward = True
+    elif key.char == 's':
+        manual.is_moving_down = True
+    elif key.char == 'd':
+        manual.is_moving_right = True
+    elif key.char == 'a':
+        manual.is_moving_left = True
+
+def start_calibration_control():
+    control_thread = threading.Thread(target=motor_control_loop)
+    control_thread.daemon = True # Allows the main program to exit even if this thread is running
+    control_thread.start()
+    
+    # Collect events until released
+    with keyboard.Listener(on_press=on_press_calibration, on_release=on_release) as listener:
+        print("Listening for key presses... Press 'Esc' to exit.")
+        listener.join()
+    print("Exiting program.")
+
 def calibrate():
+    """
+    Calibration function with terminal interface.
+    """
     print("Calibration starting")
     time.sleep(1)
     reset_manual_state()
     print("Press Enter to save position")
-    start_manual_control()
-
-
-if __name__ == "__main__":
-    calibrate()
+    start_calibration_control()
