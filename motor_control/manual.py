@@ -28,6 +28,11 @@ y_axis = 0
 # kit2 = MotorKit(i2c=i2c, address=0x61)
 # motor2_stepper1 = kit2.stepper1 # The new motor 3
 # motor2_stepper2 = kit2.stepper2 # The new motor 4
+def dump_to_json(x_axis, y_axis):
+    coords = {"end position x":x_axis, "end position y":y_axis}
+
+    with open('calibration_info.json', 'w') as fp:
+        json.dump(coords, fp)
 
 def on_press(key):
     """
@@ -63,20 +68,25 @@ def on_release(key):
     
     if key == keyboard.Key.esc:
         return False 
-    try:
-        if key.char == 'w':
-            is_moving_forward = False
-        elif key.char == 's':
-            is_moving_down = False
-        elif key.char == 'd':
-            is_moving_right = False
-        elif key.char == 'a':
-            is_moving_left = False
-            
-    except AttributeError:
-        print(f"Special key pressed: {key}")
+    elif key == keyboard.Key.enter:
+        # Call the save function using the current global values
+        # Since dump_to_json uses the global axis variables, we can pass them.
+        dump_to_json(x_axis, y_axis)
+        print("Position is saved, exiting calibration mode...")
+        time.sleep(1)
+        return False
+
+    if key.char == 'w':
+        is_moving_forward = False
+    elif key.char == 's':
+        is_moving_down = False
+    elif key.char == 'd':
+        is_moving_right = False
+    elif key.char == 'a':
+        is_moving_left = False
 
 def up():
+    global y_axis
     # motor1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
     # motor2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
     y_axis += 1
@@ -84,6 +94,7 @@ def up():
     time.sleep(0.05)
 
 def down():
+    global y_axis
     # motor1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
     # motor2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
     y_axis -= 1
@@ -91,21 +102,22 @@ def down():
     time.sleep(0.05) 
 
 def right():
+    global x_axis    
     # motor3.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
     x_axis += 1
     print('right')
     time.sleep(0.05) 
 
-def left():   
+def left():
+    global x_axis   
     # motor3.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
     x_axis -= 1
     print('left')
     time.sleep(0.05) 
     
 def motor_control_loop():
-    print("Motor control thread started.")
-    global x_axis
-    global y_axis
+    print("Ready to control")
+    
     while True:
         if is_moving_forward:
             up()

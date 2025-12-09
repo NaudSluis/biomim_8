@@ -1,6 +1,8 @@
 import json
 import manual
 from manual import start_manual_control
+from pynput import keyboard
+import time
 
 def move_to_home():
     # while home_x != pressed:
@@ -12,6 +14,7 @@ def move_to_home():
 def reset_manual_state():
     """Resets the step counters in the 'manual' module before starting."""
     #Move to home first
+    print("Moving to home...")
     move_to_home()
 
     manual.x_axis = 0
@@ -22,13 +25,15 @@ def reset_manual_state():
     manual.is_moving_right = False
     manual.is_moving_left = False
 
-def dump_to_json(x_axis, y_axis):
-    coords = {"end position x":x_axis, "end position y":y_axis}
+    print("Moved to home")
 
-    with open('calibration_info.json', 'w') as fp:
-        json.dump(coords, fp)
+def calibrate():
+    print("Calibration starting")
+    time.sleep(1)
+    reset_manual_state()
+    print("Press Enter to save position")
+    start_manual_control()
+
 
 if __name__ == "__main__":
-    reset_manual_state()
-    start_manual_control()
-    dump_to_json(manual.x_axis, manual.y_axis)
+    calibrate()
