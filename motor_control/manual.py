@@ -77,9 +77,9 @@ def on_release(key):
         print(f"Special key pressed: {key}")
     
 def motor_control_loop():
+    print("Motor control thread started.")
     global x_axis
     global y_axis
-    print("Motor control thread started.")
     while True:
         if is_moving_forward:
             # motor1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
@@ -110,11 +110,7 @@ def motor_control_loop():
             # If not moving, still sleep briefly to prevent 100% CPU usage
             time.sleep(0.05)
     
-def dump_to_json(x_axis, y_axis):
-    coords = {"end position x":x_axis, "end position y":y_axis}
 
-    with open('calibration_info.json', 'w') as fp:
-        json.dump(coords, fp)
 
 def start_manual_control():
     control_thread = threading.Thread(target=motor_control_loop)
@@ -129,5 +125,4 @@ def start_manual_control():
 
 if __name__ == "__main__":
     start_manual_control()
-    dump_to_json(x_axis, y_axis)
     
