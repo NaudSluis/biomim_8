@@ -5,6 +5,8 @@ import time
 import threading
 import json
 import busio
+from typing import Union, Literal
+from pynput.keyboard import Key, KeyCode
 
 is_moving_forward = False
 is_moving_down = False
@@ -87,7 +89,7 @@ def up():
 
 def down():
     global y_axis
-    # motor1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+    # motor1_stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
     # motor2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
     y_axis -= 1
     print('backward')
