@@ -39,8 +39,10 @@ def on_press(key):
     global is_moving_down
     global is_moving_right
     global is_moving_left
+    
     if key == keyboard.Key.esc:
         return False 
+    
     try:
         if key.char == 'w':
             is_moving_forward = True
@@ -50,9 +52,11 @@ def on_press(key):
             is_moving_right = True
         elif key.char == 'a':
             is_moving_left = True
-
     except AttributeError:
         print(f"Special key pressed: {key}")
+    except Exception as e:
+        print(f"Error during key press handling: {e}")
+
 
 def on_release(key):
     """
@@ -65,6 +69,7 @@ def on_release(key):
     
     if key == keyboard.Key.esc:
         return False 
+    
     try:
         if key.char == 'w':
             is_moving_forward = False
@@ -74,71 +79,91 @@ def on_release(key):
             is_moving_right = False
         elif key.char == 'a':
             is_moving_left = False
-    
     except AttributeError:
         print(f"Special key pressed: {key}")
+    except Exception as e:
+        print(f"Error during key release handling: {e}")
+
 
 
 def up():
     global y_axis
-    # motor1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-    # motor2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-    y_axis += 1
-    print('forward')
-    time.sleep(0.05)
+    try:
+        # motor1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+        # motor2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+        y_axis += 1
+        print('forward')
+        time.sleep(0.05)
+    except Exception as e:
+        print(f"Error moving up: {e}")
 
 def down():
     global y_axis
-    # motor1_stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-    # motor2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-    y_axis -= 1
-    print('backward')
-    time.sleep(0.05) 
+    try:
+        # motor1_stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+        # motor2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+        y_axis -= 1
+        print('backward')
+        time.sleep(0.05)
+    except Exception as e:
+        print(f"Error moving down: {e}")
 
 def right():
-    global x_axis    
-    # motor3.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-    x_axis += 1
-    print('right')
-    time.sleep(0.05) 
+    global x_axis
+    try:
+        # motor3.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+        x_axis += 1
+        print('right')
+        time.sleep(0.05)
+    except Exception as e:
+        print(f"Error moving right: {e}")
 
 def left():
-    global x_axis   
-    # motor3.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-    x_axis -= 1
-    print('left')
-    time.sleep(0.05) 
+    global x_axis
+    try:
+        # motor3.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+        x_axis -= 1
+        print('left')
+        time.sleep(0.05)
+    except Exception as e:
+        print(f"Error moving left: {e}")
+
     
 def motor_control_loop():
-
     print("Ready to control")
     
-    while True:
-        if is_moving_forward:
-            up()
-        elif is_moving_down:
-            down()
-            
-        elif is_moving_right:
-            right()
+    try:
+        while True:
+            if is_moving_forward:
+                up()
+            elif is_moving_down:
+                down()
+            elif is_moving_right:
+                right()
+            elif is_moving_left:
+                left()
+            else:
+                # If not moving, still sleep briefly to prevent 100% CPU usage
+                time.sleep(0.05)
+    except Exception as e:
+        print(f"Error in motor control loop: {e}")
 
-        elif is_moving_left:
-            left()
-        else:
-            # If not moving, still sleep briefly to prevent 100% CPU usage
-            time.sleep(0.05)
-    
 
 
 def start_manual_control():
-    control_thread = threading.Thread(target=motor_control_loop)
-    control_thread.daemon = True # Allows the main program to exit even if this thread is running
-    control_thread.start()
-    
-    # Collect events until released
-    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        print("Listening for key presses... Press 'Esc' to exit.")
-        listener.join()
-    print("Exiting program.")
+    try:
+        control_thread = threading.Thread(target=motor_control_loop)
+        control_thread.daemon = True  # Allows the main program to exit even if this thread is running
+        control_thread.start()
+        
+        # Collect events until released
+        with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+            print("Listening for key presses... Press 'Esc' to exit.")
+            listener.join()
+        print("Exiting program.")
+        
+    except Exception as e:
+        print(f"Error starting manual control: {e}")
+
 
     
