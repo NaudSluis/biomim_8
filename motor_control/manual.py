@@ -1,169 +1,68 @@
-from adafruit_motorkit import MotorKit
-from adafruit_motor import stepper
-from pynput import keyboard
 import time
 import threading
-import json
-import busio
-from typing import Union, Literal
-from pynput.keyboard import Key, KeyCode
+from pynput import keyboard
+from DRV8825 import DRV8825
 
+# Initialize the motor
+Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
+Motor1.SetMicroStep('softward', 'fullstep')
+
+# Flags for movement
 is_moving_forward = False
-is_moving_down = False
-is_moving_right = False
-is_moving_left = False
-
-x_axis = 0
-y_axis = 0
-
-# # 1. Initialize the I2C bus (required for both)
-# i2c = busio.I2C(board.SCL, board.SDA)
-
-# # 2. Initialize the FIRST HAT (uses the default address 0x60)
-# # This connects to the HAT where you get stepper1 and stepper2
-# kit1 = MotorKit(i2c=i2c, address=0x60) 
-# motor1_stepper1 = kit1.stepper1
-# motor1_stepper2 = kit1.stepper2
-
-# # 3. Initialize the SECOND HAT (uses the changed address, e.g., 0x61)
-# # You must physically set the jumpers on the second HAT to this address
-# kit2 = MotorKit(i2c=i2c, address=0x61)
-# motor2_stepper1 = kit2.stepper1 # The new motor 3
-# motor2_stepper2 = kit2.stepper2 # The new motor 4
+is_moving_backward = False
 
 def on_press(key):
-    """
-    Callback function that is executed whenever a key is pressed.
-    """
-    global is_moving_forward
-    global is_moving_down
-    global is_moving_right
-    global is_moving_left
-    
-    if key == keyboard.Key.esc:
-        return False 
-    
+    global is_moving_forward, is_moving_backward
     try:
         if key.char == 'w':
             is_moving_forward = True
+            is_moving_backward = False
         elif key.char == 's':
-            is_moving_down = True
-        elif key.char == 'd':
-            is_moving_right = True
-        elif key.char == 'a':
-            is_moving_left = True
+            is_moving_backward = True
+            is_moving_forward = False
     except AttributeError:
-        print(f"Special key pressed: {key}")
-    except Exception as e:
-        print(f"Error during key press handling: {e}")
-
+        pass
+    if key == keyboard.Key.esc:
+        return False
 
 def on_release(key):
-    """
-    Callback function that is executed whenever a key is released.
-    """
-    global is_moving_forward
-    global is_moving_down
-    global is_moving_right
-    global is_moving_left
-    
-    if key == keyboard.Key.esc:
-        return False 
-    
+    global is_moving_forward, is_moving_backward
     try:
         if key.char == 'w':
             is_moving_forward = False
         elif key.char == 's':
-            is_moving_down = False
-        elif key.char == 'd':
-            is_moving_right = False
-        elif key.char == 'a':
-            is_moving_left = False
+            is_moving_backward = False
     except AttributeError:
-        print(f"Special key pressed: {key}")
-    except Exception as e:
-        print(f"Error during key release handling: {e}")
+        pass
+    if key == keyboard.Key.esc:
+        return False
 
+# Small-step movement functions
+def step_motor_forward():
+    Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.00002)
 
+def step_motor_backward():
+    Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.00002)
 
-def up():
-    global y_axis
-    try:
-        # motor1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-        # motor2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-        y_axis += 1
-        print('forward')
-        time.sleep(0.05)
-    except Exception as e:
-        print(f"Error moving up: {e}")
-
-def down():
-    global y_axis
-    try:
-        # motor1_stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-        # motor2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-        y_axis -= 1
-        print('backward')
-        time.sleep(0.05)
-    except Exception as e:
-        print(f"Error moving down: {e}")
-
-def right():
-    global x_axis
-    try:
-        # motor3.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-        x_axis += 1
-        print('right')
-        time.sleep(0.05)
-    except Exception as e:
-        print(f"Error moving right: {e}")
-
-def left():
-    global x_axis
-    try:
-        # motor3.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-        x_axis -= 1
-        print('left')
-        time.sleep(0.05)
-    except Exception as e:
-        print(f"Error moving left: {e}")
-
-    
 def motor_control_loop():
-    print("Ready to control")
-    
-    try:
-        while True:
-            if is_moving_forward:
-                up()
-            elif is_moving_down:
-                down()
-            elif is_moving_right:
-                right()
-            elif is_moving_left:
-                left()
-            else:
-                # If not moving, still sleep briefly to prevent 100% CPU usage
-                time.sleep(0.05)
-    except Exception as e:
-        print(f"Error in motor control loop: {e}")
-
-
+    """Continuously step the motor based on pressed keys."""
+    while True:
+        if is_moving_forward:
+            step_motor_forward()
+        elif is_moving_backward:
+            step_motor_backward()
+        else:
+            time.sleep(0.01)
 
 def start_manual_control():
-    try:
-        control_thread = threading.Thread(target=motor_control_loop)
-        control_thread.daemon = True  # Allows the main program to exit even if this thread is running
-        control_thread.start()
-        
-        # Collect events until released
-        with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-            print("Listening for key presses... Press 'Esc' to exit.")
-            listener.join()
-        print("Exiting program.")
-        
-    except Exception as e:
-        print(f"Error starting manual control: {e}")
+    control_thread = threading.Thread(target=motor_control_loop, daemon=True)
+    control_thread.start()
+    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+        print("Listening for keys... Press 'Esc' to exit.")
+        listener.join()
+    Motor1.Stop()
+    print("Program exited.")
 
-
-    
+if __name__ == "__main__":
+    start_manual_control()
+ 
