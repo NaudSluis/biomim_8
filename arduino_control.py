@@ -10,7 +10,7 @@ def initialize_serial(port, baudrate):
     try:
         ser = serial.Serial(port, baudrate)
         time.sleep(2)  # Wait for the serial connection to initialize
-        # ser.write(b'4')  # Send an initial command to the Arduino (if needed)
+        ser.write(b'5')  # Send an initial command to the Arduino (if needed)
         return ser
     except serial.SerialException as e:
         print(f"Error opening serial port: {e}", flush=True)

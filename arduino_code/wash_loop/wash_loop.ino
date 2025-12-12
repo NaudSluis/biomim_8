@@ -128,7 +128,9 @@ void loop() {
     else if (incomingByte == '4') {
         Serial.println("Stepper test!");
 
-        stepper_test();
+        servo1.write(50);
+        servo2.write(50);
+
     } 
     else {
       Serial.print("Unknown byte received: ");
