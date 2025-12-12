@@ -8,14 +8,12 @@ from DRV8825 import DRV8825
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
 Motor1.SetMicroStep('softward', 'fullstep')
 
-# States
 is_moving_forward = False      # single step
 is_moving_backward = False     # single step
 continuous_forward = False     # toggle
 continuous_backward = False    # toggle
 running = True
 
-# ---------- Non-blocking key reader ----------
 def get_key_nonblocking():
     import select
     dr, _, _ = select.select([sys.stdin], [], [], 0)
@@ -23,7 +21,6 @@ def get_key_nonblocking():
         return sys.stdin.read(1)
     return None
 
-# ---------- Keyboard listener ----------
 def keyboard_listener():
     global is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward, running
@@ -49,33 +46,28 @@ def keyboard_listener():
 
             key = key.lower()
 
-            # --- Single steps ---
             if key == "w":
                 is_moving_forward = True
 
             elif key == "s":
                 is_moving_backward = True
 
-            # --- Continuous forward toggle ---
             elif key == "e":
                 continuous_forward = not continuous_forward
                 if continuous_forward:
                     continuous_backward = False  # stop opposite mode
 
-            # --- Continuous backward toggle ---
             elif key == "d":
                 continuous_backward = not continuous_backward
                 if continuous_backward:
                     continuous_forward = False  # stop opposite mode
 
-            # --- Stop everything ---
             elif key == " ":
                 continuous_forward = False
                 continuous_backward = False
                 is_moving_forward = False
                 is_moving_backward = False
 
-            # --- Exit ---
             elif key == "\x1b":  # ESC
                 running = False
                 break
@@ -83,9 +75,8 @@ def keyboard_listener():
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-# ---------- Motor Control Loop ----------
 def step_motor_forward():
-    Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.00002)
+    Motor1.TurnStep(Dir='forward', steps=200, stepdelay=0.00002)
 
 def step_motor_backward():
     Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.00002)
@@ -96,7 +87,6 @@ def motor_control_loop():
 
     while running:
 
-        # --- Single steps ---
         if is_moving_forward:
             step_motor_forward()
             is_moving_forward = False
@@ -105,7 +95,6 @@ def motor_control_loop():
             step_motor_backward()
             is_moving_backward = False
 
-        # --- Continuous movement ---
         elif continuous_forward:
             step_motor_forward()
 
@@ -115,7 +104,6 @@ def motor_control_loop():
         else:
             time.sleep(0.01)
 
-# ---------- Main ----------
 def start_manual_control():
     global running
 
