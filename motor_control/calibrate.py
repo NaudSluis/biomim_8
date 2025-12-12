@@ -142,3 +142,6 @@ def calibrate():
     print("Starting calibration in 2 seconds...")
     time.sleep(2)
     start_calibration_control()
+
+if __name__ == "__main__":
+    calibrate()
