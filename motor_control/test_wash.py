@@ -1,12 +1,14 @@
 import json
 from motor_control.calibrate import move_to_home
-from adafruit_motorkit import MotorKit
-from adafruit_motor import stepper
+import DRV8825
 import time
 import serial
 from datetime import datetime
 from pump import start_pump
 #Initialize motors
+
+Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
+Motor1.SetMicroStep('softward', 'fullstep')
 
 def rotate_sponge():
     """
@@ -71,9 +73,7 @@ def move_to_position(calibrated_x, calibrated_y):
     """
     try:
         for _ in range(calibrated_y):
-            # motor1_stepper1.onestep(direction=stepper.Forward, style=stepper.SINGLE)
-            # motor1_stepper2.onestep(direction=stepper.Forward, style=stepper.SINGLE)
-            time.sleep(0.01)
+            Motor1.TurnStep(Dir='forward', steps=calibrated_y, stepdelay=0.000001)
 
         for _ in range(calibrated_x):
             # motor2_stepper1.onestep(direction=stepper.Forward, style=stepper.SINGLE)
