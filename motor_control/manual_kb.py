@@ -12,7 +12,6 @@ is_moving_forward = False
 is_moving_backward = False
 running = True
 
-# ---------- Keyboard Input (SSH-safe) ----------
 def get_key_nonblocking():
     """Read one key if available, otherwise return None."""
     import select
@@ -24,12 +23,11 @@ def get_key_nonblocking():
 def keyboard_listener():
     global is_moving_forward, is_moving_backward, running
 
-    # Make terminal read single characters
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     tty.setcbreak(fd)
 
-    print("Listening for W/S (Esc to quit)...")
+    print("Press W/S for single steps. ESC to quit.")
 
     try:
         while running:
@@ -42,21 +40,11 @@ def keyboard_listener():
 
             if key == "w":
                 is_moving_forward = True
-                is_moving_backward = False
-
             elif key == "s":
                 is_moving_backward = True
-                is_moving_forward = False
-
-            elif key == "\x1b":  # ESC key
+            elif key == "\x1b":  # ESC
                 running = False
                 break
-
-            # Key release simulation:
-            # When another key is pressed, stop previous movement
-            elif key.strip() == "":
-                is_moving_forward = False
-                is_moving_backward = False
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
@@ -69,14 +57,20 @@ def step_motor_backward():
     Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.00002)
 
 def motor_control_loop():
-    global running
+    global running, is_moving_forward, is_moving_backward
+
     while running:
         if is_moving_forward:
             step_motor_forward()
+            is_moving_forward = False   # <-- stop after one step
+
         elif is_moving_backward:
             step_motor_backward()
+            is_moving_backward = False  # <-- stop after one step
+
         else:
             time.sleep(0.01)
+
 
 # ---------- Main ----------
 def start_manual_control():
