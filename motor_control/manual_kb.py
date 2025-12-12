@@ -76,10 +76,10 @@ def keyboard_listener():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 def step_motor_forward():
-    Motor1.TurnStep(Dir='forward', steps=200, stepdelay=0.00002)
+    Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.00001)
 
 def step_motor_backward():
-    Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.00002)
+    Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.00001)
 
 def motor_control_loop():
     global running, is_moving_forward, is_moving_backward
