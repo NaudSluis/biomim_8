@@ -3,11 +3,11 @@ import threading
 from pynput import keyboard
 from DRV8825 import DRV8825
 
-# Initialize the motor
+
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
 Motor1.SetMicroStep('softward', 'fullstep')
 
-# Flags for movement
+
 is_moving_forward = False
 is_moving_backward = False
 
@@ -30,6 +30,7 @@ def on_release(key):
     try:
         if key.char == 'w':
             is_moving_forward = False
+            print('w')
         elif key.char == 's':
             is_moving_backward = False
     except AttributeError:

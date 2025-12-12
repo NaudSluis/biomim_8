@@ -3,7 +3,7 @@ calibrate when just using manual control."""
 
 import json
 import manual
-from manual import on_release, motor_control_loop
+from motor_control.manual import on_release, motor_control_loop
 from pynput import keyboard
 import time
 import threading
@@ -119,7 +119,7 @@ def calibrate():
         reset_manual_state()
         print("Press Enter to save position")
         start_calibration_control()
-        
+
     except Exception as e:
         print(f"Error during calibration: {e}")
 

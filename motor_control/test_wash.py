@@ -1,5 +1,5 @@
 import json
-from calibrate import move_to_home
+from motor_control.calibrate import move_to_home
 from adafruit_motorkit import MotorKit
 from adafruit_motor import stepper
 import time
@@ -103,7 +103,7 @@ def demo():
         move_to_position(-10, 0) # Move back to spray 
         start_pump() # Water pump in the future
         move_to_home()
-        
+
     except Exception as e:
         print(f"Error during demo: {e}")
         return
