@@ -4,7 +4,7 @@ from .DRV8825 import DRV8825
 import time
 import serial
 from datetime import datetime
-from pump import send_arduino_signal
+from motor_control.pump import send_arduino_signal
 #Initialize motors
 
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
