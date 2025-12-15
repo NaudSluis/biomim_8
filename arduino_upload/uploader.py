@@ -2,7 +2,7 @@ import subprocess
 import glob
 import os
 
-SKETCH_DIR = "/home/group8/arduino_projects/wash_loop"
+SKETCH_DIR = "/home/group8/biomim_8/wash_loop"
 FQBN = "arduino:avr:uno"
 
 def find_serial_port():
