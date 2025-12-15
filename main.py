@@ -1,6 +1,6 @@
 # imports from other files
 from motor_control.calibrate import calibrate
-from motor_control.manual import start_manual_control
+from motor_control.manual_control import start_manual_control
 
 
 def main(answer: str):
