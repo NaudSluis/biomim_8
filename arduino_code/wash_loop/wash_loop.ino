@@ -3,8 +3,7 @@
 #include <ArduinoJson.h>
 
 Servo servo1;
-Servo servo2;
-AF_Stepper motor(2048, 2);
+
 
 
 // Define the pins where the servos are connected
