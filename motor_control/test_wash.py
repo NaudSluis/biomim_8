@@ -1,6 +1,6 @@
 import json
 from motor_control.calibrate import move_to_home
-import DRV8825
+from .DRV8825 import DRV8825
 import time
 import serial
 from datetime import datetime
