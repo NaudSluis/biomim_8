@@ -4,12 +4,34 @@ from .DRV8825 import DRV8825
 import time
 import serial
 from datetime import datetime
-from motor_control.pump import send_arduino_signal
+# from motor_control.pump import send_arduino_signal
 #Initialize motors
 
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
 Motor1.SetMicroStep('softward', 'fullstep')
 
+def send_arduino_signal(signal):
+    try:
+        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+        time.sleep(2)
+    except serial.SerialException as e:
+        print(f"Error opening serial port: {e}")
+        return
+
+    try:
+        ser.write(signal.encode('utf-8'))
+        time.sleep(0.5)
+
+        while ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8').strip()
+            if line:
+                print(f"Arduino Response: {line}")
+    except Exception as e:
+        print(f"Error during serial communication: {e}")
+    finally:
+        ser.close()
+
+    return
 
 def get_calibrated_postion(json_file: str):
     """
