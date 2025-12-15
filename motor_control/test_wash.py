@@ -70,7 +70,7 @@ def move_to_position(calibrated_x, calibrated_y):
     """
     try:
         for _ in range(calibrated_y):
-            Motor1.TurnStep(Dir='forward', steps=calibrated_y, stepdelay=0.000001)
+            Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.000001)
 
         for _ in range(calibrated_x):
             # motor2_stepper1.onestep(direction=stepper.Forward, style=stepper.SINGLE)
@@ -90,6 +90,7 @@ def demo():
     try:
         move_to_home()
         calibrated_x, calibrated_y = get_calibrated_postion('calibration_info.json')
+        print(calibrated_x, calibrated_y)
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
             return
