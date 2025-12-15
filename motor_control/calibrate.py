@@ -106,7 +106,7 @@ def calibration_listener():
                 manual_control.is_moving_backward = False
                 manual_control.continuous_forward = False
                 manual_control.continuous_backward = False
-            elif key == '\r':  # ENTER
+            elif key in ('\n', '\r'):  # ENTER
                 dump_to_json(manual_control.x_axis, manual_control.y_axis)
                 print("Position saved, exiting calibration...")
                 manual_control.running = False

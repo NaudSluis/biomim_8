@@ -1,6 +1,7 @@
 from motor_control.calibrate import calibrate
 from motor_control.manual_control import start_manual_control
 from arduino_upload.uploader import upload_arduino_code
+from motor_control.test_wash import demo
 
 
 def main(answer: str):
@@ -15,7 +16,7 @@ def main(answer: str):
             calibrate()
 
         elif answer == 't':
-            print("Test mode not implemented yet.")
+            demo()
 
         elif answer == 'm':
             start_manual_control()

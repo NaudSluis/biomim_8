@@ -29,4 +29,4 @@ def upload_arduino_code():
         check=True
     )
 
-    print("\n✅ wash_loop upload complete\n")
+    print("\nwash_loop upload complete\n")
