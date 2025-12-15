@@ -4,36 +4,11 @@ import DRV8825
 import time
 import serial
 from datetime import datetime
-from pump import start_pump
+from pump import send_arduino_signal
 #Initialize motors
 
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
 Motor1.SetMicroStep('softward', 'fullstep')
-
-def rotate_sponge():
-    """
-    Tells the Arduino to rotate the sponge to clean the window
-    """
-    try:
-        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-        time.sleep(2)
-    except serial.SerialException as e:
-        print(f"Error opening serial port: {e}")
-        return
-
-    try:
-        ser.write(b'iets zinnings')
-        time.sleep(0.5)
-
-        while ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8').strip()
-            if line:
-                print(f"Arduino Response: {line}")
-    except Exception as e:
-        print(f"Error during serial communication: {e}")
-    finally:
-        ser.close()
-    return
 
 
 def get_calibrated_postion(json_file: str):
@@ -97,11 +72,11 @@ def demo():
             print("Calibration data is invalid.")
             return
         move_to_position(calibrated_x - 10, calibrated_y) # Move to spray position
-        start_pump() # Soapy pump in the future
+        send_arduino_signal('pump_soap') # Soapy pump in the future
         move_to_position(10, calibrated_y) 
-        rotate_sponge()
+        send_arduino_signal('rotate')
         move_to_position(-10, 0) # Move back to spray 
-        start_pump() # Water pump in the future
+        send_arduino_signal('pump_water') # Water pump in the future
         move_to_home()
 
     except Exception as e:

@@ -1,7 +1,7 @@
 import serial
 import time
 
-def start_pump():
+def send_arduino_signal(signal):
     try:
         ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
         time.sleep(2)
@@ -10,7 +10,7 @@ def start_pump():
         return
 
     try:
-        ser.write(b'1')
+        ser.write(signal.encode('utf-8'))
         time.sleep(0.5)
 
         while ser.in_waiting > 0:
