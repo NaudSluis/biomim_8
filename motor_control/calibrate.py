@@ -54,9 +54,9 @@ def reset_manual_state():
 def dump_to_json(x_axis, y_axis):
     """Save calibration positions to JSON."""
     coords = {"end position x": x_axis, "end position y": y_axis}
-
+    print(coords)
     try:
-        with open('calibration_info.json', 'w') as fp:
+        with open('motor_control/calibration_info.json', 'w') as fp:
             json.dump(coords, fp)
     except Exception as e:
         print(f"Error dumping to JSON: {e}")
