@@ -46,6 +46,7 @@ def send_arduino_signal(ser, signal):
         print(f"Error during serial communication: {e}", flush=True)
     finally:
         ser.close()
+        print('serial closed')
 
     return
 
