@@ -23,10 +23,17 @@ def initialize_connection():
         ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
         time.sleep(2)
     except serial.SerialException as e:
-        print(f"Error opening serial port: {e}")
+        print(f"Error opening serial port: {e}", flush=True)
         return ser
 
 def send_arduino_signal(ser, signal):
+    
+    try:
+        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+        time.sleep(2)
+    except serial.SerialException as e:
+        print(f"Error opening serial port: {e}", flush=True)
+
     try:
         ser.write(signal.encode('utf-8'))
         time.sleep(0.5)
