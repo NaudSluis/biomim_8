@@ -90,7 +90,7 @@ def demo():
     Performs one washing cycle and logs to json
     """
     start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    initialize_connection()
+
 
     try:
         move_to_home()

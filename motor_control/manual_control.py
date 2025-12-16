@@ -24,7 +24,7 @@ def initialize_connection():
         time.sleep(2)
     except serial.SerialException as e:
         print(f"Error opening serial port: {e}", flush=True)
-        return ser
+    return ser
 
 def send_arduino_signal(ser, signal):
 
