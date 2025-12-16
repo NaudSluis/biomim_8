@@ -13,9 +13,6 @@ AF_DCMotor motor2(2);  // M2
 void setup() {
   Serial.begin(9600);
   Serial.println("System initialized");
-
-  servo1.attach(servo1Pin);
-  servo1.write(0);
 }
 
 void pump(AF_DCMotor &motor, int time) {
@@ -25,10 +22,13 @@ void pump(AF_DCMotor &motor, int time) {
   motor.run(RELEASE);
 }
 
-void turn_servo(int angle) {
-  servo1.write(angle);
-  delay(500);
+void turn_servo() {
+  servo1.attach(servo1Pin);
   servo1.write(0);
+  delay(2500);
+  servo1.write(180);
+  delay(2500);
+  servo1.detach();
 }
 
 void loop() {
@@ -46,7 +46,7 @@ void loop() {
       pump(motor2, 5000);
     }
     else if (command == "rotate") {
-      turn_servo(180);
+      turn_servo();
     }
     else {
       Serial.println("Unknown command");
