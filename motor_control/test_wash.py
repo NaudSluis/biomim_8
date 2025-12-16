@@ -89,7 +89,7 @@ def demo():
 
     try:
         move_to_home()
-        calibrated_x, calibrated_y = get_calibrated_postion('calibration_info.json')
+        calibrated_x, calibrated_y = get_calibrated_postion('motor_control/calibration_info.json')
         print(calibrated_x, calibrated_y)
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
