@@ -92,30 +92,30 @@ def demo():
     try:
         move_to_home()
         calibrated_x, calibrated_y = get_calibrated_postion('motor_control/calibration_info.json')
-
+        ser = initialize_connection()
         print(calibrated_x, calibrated_y)
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
             return
         
         move_to_position(calibrated_x - 10, calibrated_y) # Move to spray position
-        time.sleep(20)
+        time.sleep(10)
 
-        send_arduino_signal('pump_soap') # Soapy pump in the future
-        time.sleep(20)
+        # send_arduino_signal(ser, 'pump_soap') # Soapy pump in the future
+        # time.sleep(20)
 
         move_to_position(10, calibrated_y)
         time.sleep(20)
 
-        send_arduino_signal('rotate')
+        send_arduino_signal(ser, 'rotate')
         time.sleep(20)
 
         move_to_position(-10, 0) # Move back to spray 
         time.sleep(20)
 
-        send_arduino_signal('pump_water') # Water pump in the future
+        send_arduino_signal(ser, 'pump_water') # Water pump in the future
         time.sleep(20)
-        
+
         move_to_home()
 
     except Exception as e:
