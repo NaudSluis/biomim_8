@@ -12,6 +12,8 @@ is_moving_forward = False      # single step
 is_moving_backward = False     # single step
 continuous_forward = False     # toggle
 continuous_backward = False    # toggle
+y_axis = 0
+x_axis = 0
 running = True
 
 def get_key_nonblocking():
@@ -24,6 +26,7 @@ def get_key_nonblocking():
 def keyboard_listener():
     global is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward, running
+    global y_axis, x_axis
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -89,17 +92,22 @@ def motor_control_loop():
 
         if is_moving_forward:
             step_motor_forward()
+            y_axis += 1
             is_moving_forward = False
 
         elif is_moving_backward:
             step_motor_backward()
+            y_axis -= 1
             is_moving_backward = False
 
         elif continuous_forward:
             step_motor_forward()
+            y_axis += 1
 
         elif continuous_backward:
             step_motor_backward()
+            y_axis -= 1
+
 
         else:
             time.sleep(0.01)
