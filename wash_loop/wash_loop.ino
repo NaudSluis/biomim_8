@@ -26,7 +26,6 @@ void pump(AF_DCMotor &motor, int time) {
 }
 
 void turn_servo(int angle) {
-  angle = constrain(angle, 0, 180);
   servo1.write(angle);
   delay(500);
   servo1.write(0);
