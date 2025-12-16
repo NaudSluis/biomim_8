@@ -10,14 +10,15 @@ from datetime import datetime
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
 Motor1.SetMicroStep('softward', 'fullstep')
 
-def send_arduino_signal(signal):
+def initialize_connection():
     try:
         ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
         time.sleep(2)
     except serial.SerialException as e:
         print(f"Error opening serial port: {e}")
-        return
+        return ser
 
+def send_arduino_signal(ser, signal):
     try:
         ser.write(signal.encode('utf-8'))
         time.sleep(0.5)
@@ -86,20 +87,35 @@ def demo():
     Performs one washing cycle and logs to json
     """
     start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    initialize_connection()
 
     try:
         move_to_home()
         calibrated_x, calibrated_y = get_calibrated_postion('motor_control/calibration_info.json')
+
         print(calibrated_x, calibrated_y)
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
             return
+        
         move_to_position(calibrated_x - 10, calibrated_y) # Move to spray position
+        time.sleep(20)
+
         send_arduino_signal('pump_soap') # Soapy pump in the future
-        move_to_position(10, calibrated_y) 
+        time.sleep(20)
+
+        move_to_position(10, calibrated_y)
+        time.sleep(20)
+
         send_arduino_signal('rotate')
+        time.sleep(20)
+
         move_to_position(-10, 0) # Move back to spray 
+        time.sleep(20)
+
         send_arduino_signal('pump_water') # Water pump in the future
+        time.sleep(20)
+        
         move_to_home()
 
     except Exception as e:
@@ -109,7 +125,7 @@ def demo():
     end = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     try:
-        with open('calibration_info.json', 'a') as fp:
+        with open('logging.json', 'a') as fp:
             json.dump({'start_time': start, 'end_time': end}, fp)
 
     except Exception as e:
