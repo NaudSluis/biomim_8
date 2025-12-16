@@ -26,7 +26,7 @@ def get_key_nonblocking():
 def keyboard_listener():
     global is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward, running
-    global y_axis, x_axis
+    
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -87,6 +87,7 @@ def step_motor_backward():
 def motor_control_loop():
     global running, is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward
+    global y_axis, x_axis
 
     while running:
 
