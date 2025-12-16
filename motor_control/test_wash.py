@@ -131,6 +131,8 @@ def demo():
 
     end = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+    ser.close()
+
     try:
         with open('logging.json', 'a') as fp:
             json.dump({'start_time': start, 'end_time': end}, fp)

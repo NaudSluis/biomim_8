@@ -27,15 +27,9 @@ def initialize_connection():
         return ser
 
 def send_arduino_signal(ser, signal):
-    
-    try:
-        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-        time.sleep(2)
-    except serial.SerialException as e:
-        print(f"Error opening serial port: {e}", flush=True)
 
     try:
-        ser.write(signal.encode('utf-8'))
+        ser.write((signal + "\n").encode("utf-8"))
         time.sleep(0.5)
 
         while ser.in_waiting > 0:
@@ -44,9 +38,6 @@ def send_arduino_signal(ser, signal):
                 print(f"Arduino Response: {line}", flush=True)
     except Exception as e:
         print(f"Error during serial communication: {e}", flush=True)
-    finally:
-        ser.close()
-        print('serial closed')
 
     return
 
@@ -117,6 +108,7 @@ def keyboard_listener():
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        ser.close()
 
 def step_motor_forward():
     Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.000001)
