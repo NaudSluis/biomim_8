@@ -2,6 +2,7 @@ import sys
 import termios
 import tty
 import time
+import serial
 import threading
 from .DRV8825 import DRV8825
 
@@ -16,6 +17,31 @@ y_axis = 0
 x_axis = 0
 running = True
 
+
+def initialize_connection():
+    try:
+        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+        time.sleep(2)
+    except serial.SerialException as e:
+        print(f"Error opening serial port: {e}")
+        return ser
+
+def send_arduino_signal(ser, signal):
+    try:
+        ser.write(signal.encode('utf-8'))
+        time.sleep(0.5)
+
+        while ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8').strip()
+            if line:
+                print(f"Arduino Response: {line}", flush=True)
+    except Exception as e:
+        print(f"Error during serial communication: {e}", flush=True)
+    finally:
+        ser.close()
+
+    return
+
 def get_key_nonblocking():
     import select
     dr, _, _ = select.select([sys.stdin], [], [], 0)
@@ -27,6 +53,7 @@ def keyboard_listener():
     global is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward, running
     
+    ser = initialize_connection()
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -64,7 +91,12 @@ def keyboard_listener():
                 continuous_backward = not continuous_backward
                 if continuous_backward:
                     continuous_forward = False  # stop opposite mode
-
+            elif key == "r":
+                send_arduino_signal(ser, 'rotate')
+            elif key == "z":
+                send_arduino_signal(ser, 'pump_soap')
+            elif key == "x":
+                send_arduino_signal(ser, 'pump_water')
             elif key == " ":
                 continuous_forward = False
                 continuous_backward = False
