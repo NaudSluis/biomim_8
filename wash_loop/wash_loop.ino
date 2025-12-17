@@ -1,7 +1,10 @@
+// This file contains the code for the Arduino. Those include, water pumps and servo's.
+
 #include <AFMotor.h>
 #include <Servo.h>
 #include <ArduinoJson.h>
 
+// Pins on Arduino
 const int servo1Pin = 9;
 const int servo2Pin = 10;
 
@@ -9,6 +12,7 @@ const int servo2Pin = 10;
 Servo servo1;
 Servo servo2;
 
+// Motors
 AF_DCMotor motor1(1);  // M1
 AF_DCMotor motor2(2);  // M2
 
@@ -18,6 +22,9 @@ void setup() {
 }
 
 void pump(AF_DCMotor &motor, int time) {
+  // Run a pump for x amount of time
+  // param motor: specify motor
+  // param time: amount of time in miliseconds
   motor.setSpeed(255);
   motor.run(FORWARD);
   delay(time);
@@ -25,6 +32,7 @@ void pump(AF_DCMotor &motor, int time) {
 }
 
 void turn_servo_const() {
+  // Turn the constant servo for 2.5 seconds one way, then 2.5 the other
   servo1.attach(servo1Pin);
   servo1.write(0);
   delay(2500);
@@ -34,6 +42,7 @@ void turn_servo_const() {
 }
 
 void turn_servo_degree_forward() {
+  // Turn degree servo to 180 degree
   servo2.attach(servo2Pin);
   servo2.write(180);
   delay(2500);
@@ -41,6 +50,7 @@ void turn_servo_degree_forward() {
 }
 
 void turn_servo_degree_backward() {
+  // Turn degree servo to 0 degree
   servo2.attach(servo2Pin);
   servo2.write(0);
   delay(2500);
@@ -48,6 +58,7 @@ void turn_servo_degree_backward() {
 }
 
 void loop() {
+  // Gets command from Pi and does the corresponding action
   if (Serial.available()) {
     String command = Serial.readStringUntil('\n');
     command.trim();
