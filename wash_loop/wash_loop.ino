@@ -62,7 +62,7 @@ void loop() {
       pump(motor2, 5000);
     }
     else if (command == "rotate") {
-      turn_servo();
+      turn_servo_const();
     }
     else if (command == "forward") {
       turn_servo_degree_forward();
