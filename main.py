@@ -11,24 +11,24 @@ from motor_control.test_wash import demo
 def main(answer: str):
     """
     Control function for robot
-    
+
     :param answer: answer typed in by user via input
     :type answer: str
     """
     try:
-        if answer not in ['a', 'c', 't', 'm']:
+        if answer not in ["a", "c", "t", "m"]:
             raise ValueError("Invalid input.")
 
-        if answer == 'a':
+        if answer == "a":
             upload_arduino_code()
 
-        elif answer == 'c':
+        elif answer == "c":
             calibrate()
 
-        elif answer == 't':
+        elif answer == "t":
             demo()
 
-        elif answer == 'm':
+        elif answer == "m":
             start_manual_control()
 
     except Exception as e:
@@ -37,11 +37,9 @@ def main(answer: str):
 
 if __name__ == "__main__":
     while True:
-        answer = input(
-            "Upload Arduino (a), calibrate (c), test (t), manual (m)? "
-        ).strip().lower()
+        answer = input("Upload Arduino (a), calibrate (c), test (t), manual (m)? ").strip().lower()
 
-        if answer in ['a', 'c', 't', 'm']:
+        if answer in ["a", "c", "t", "m"]:
             main(answer)
         else:
             print("Unknown answer, try again.\n")

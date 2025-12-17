@@ -5,8 +5,9 @@ import glob
 import os
 
 # group8 = pi name, biomim_8 dir name and wash_loop sketch dir. Make sure that the sketch dir has the same name as the sketch
-SKETCH_DIR = "/home/group8/biomim_8/wash_loop" 
+SKETCH_DIR = "/home/group8/biomim_8/wash_loop"
 FQBN = "arduino:avr:uno"
+
 
 def find_serial_port():
     """
@@ -16,6 +17,7 @@ def find_serial_port():
     if not ports:
         raise RuntimeError("No Arduino detected")
     return ports[0]
+
 
 def upload_arduino_code():
     """
@@ -28,14 +30,8 @@ def upload_arduino_code():
 
     print(f"\nUploading wash_loop to {port}...\n")
 
-    subprocess.run(
-        ["arduino-cli", "compile", "--fqbn", FQBN, SKETCH_DIR],
-        check=True
-    )
+    subprocess.run(["arduino-cli", "compile", "--fqbn", FQBN, SKETCH_DIR], check=True)
 
-    subprocess.run(
-        ["arduino-cli", "upload", "-p", port, "--fqbn", FQBN, SKETCH_DIR],
-        check=True
-    )
+    subprocess.run(["arduino-cli", "upload", "-p", port, "--fqbn", FQBN, SKETCH_DIR], check=True)
 
     print("\nwash_loop upload complete\n")

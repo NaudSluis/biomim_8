@@ -58,7 +58,7 @@ def dump_to_json(x_axis, y_axis):
     coords = {"end position x": x_axis, "end position y": y_axis}
     print(coords)
     try:
-        with open('motor_control/calibration_info.json', 'w') as fp:
+        with open("motor_control/calibration_info.json", "w") as fp:
             json.dump(coords, fp)
     except Exception as e:
         print(f"Error dumping to JSON: {e}")
@@ -98,7 +98,7 @@ def calibration_listener():
                     manual_control.continuous_backward = False  # stop opposite modes
                     manual_control.continuous_left = False
                     manual_control.continuous_right = False
-                    
+
             elif key == "a":
                 manual_control.continuous_left = not manual_control.continuous_left
                 if manual_control.continuous_left:
@@ -125,16 +125,16 @@ def calibration_listener():
                 manual_control.is_moving_forward = True
             elif key == "h":
                 manual_control.is_moving_backward = True
-            elif key_lower == ' ': # stop movement
+            elif key_lower == " ":  # stop movement
                 manual_control.is_moving_forward = False
                 manual_control.is_moving_backward = False
                 manual_control.continuous_forward = False
                 manual_control.continuous_backward = False
-            elif key in ('\n', '\r'):  # ENTER to save
+            elif key in ("\n", "\r"):  # ENTER to save
                 dump_to_json(manual_control.x_axis, manual_control.y_axis)
                 print("Position saved, exiting calibration...")
                 manual_control.running = False
-            elif key == '\x1b':  # ESC to exit to main
+            elif key == "\x1b":  # ESC to exit to main
                 manual_control.running = False
 
     finally:
@@ -169,6 +169,7 @@ def calibrate():
     print("Starting calibration in 2 seconds...")
     time.sleep(2)
     start_calibration_control()
+
 
 if __name__ == "__main__":
     calibrate()
