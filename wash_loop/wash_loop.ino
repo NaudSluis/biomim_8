@@ -36,14 +36,14 @@ void turn_servo_const() {
 void turn_servo_degree_forward() {
   servo2.attach(servo2Pin);
   servo2.write(180);
-  delay(2500)
+  delay(2500);
   servo2.detach();
 }
 
 void turn_servo_degree_backward() {
   servo2.attach(servo2Pin);
   servo2.write(0);
-  delay(2500)
+  delay(2500);
   servo2.detach();
 }
 
