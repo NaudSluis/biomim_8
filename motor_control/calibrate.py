@@ -72,14 +72,16 @@ def calibration_listener():
     tty.setcbreak(fd)
 
     try:
-        print("Calibration started. Controls:")
-        print("  W = single step forward")
-        print("  S = single step backward")
-        print("  E = toggle continuous forward")
-        print("  D = toggle continuous backward")
+        print("  W = toggle continuous up")
+        print("  A = toggle continuous left")
+        print("  S = toggle continuous down")
+        print("  D = toggle continuous right")
+        print("  X = Step right")
+        print("  Z = Step left")
+        print("  Y = Step up")
+        print("  H = Step Down")
         print("  SPACE = stop")
-        print("  ENTER = save position")
-        print("  ESC = quit without saving")
+        print("  ESC = quit")
 
         while manual_control.running:
             key = get_key_nonblocking()
@@ -89,18 +91,39 @@ def calibration_listener():
 
             key_lower = key.lower()
 
-            if key_lower == 'w':
-                manual_control.is_moving_forward = True
-            elif key_lower == 's':
-                manual_control.is_moving_backward = True
-            elif key_lower == 'e':
+            if key == "w":
                 manual_control.continuous_forward = not manual_control.continuous_forward
                 if manual_control.continuous_forward:
+                    manual_control.continuous_backward = False  # stop opposite mode
+                    manual_control.continuous_left = False
+                    manual_control.continuous_right = False
+                    
+            elif key == "a":
+                manual_control.continuous_left = not manual_control.continuous_left
+                if manual_control.continuous_left:
+                    manual_control.continuous_right = False  # stop opposite mode
                     manual_control.continuous_backward = False
-            elif key_lower == 'd':
+                    manual_control.continuous_forward = False
+            elif key == "s":
                 manual_control.continuous_backward = not manual_control.continuous_backward
                 if manual_control.continuous_backward:
+                    manual_control.continuous_forward = False  # stop opposite mode
+                    manual_control.continuous_left = False
+                    manual_control.continuous_right = False
+            elif key == "d":
+                manual_control.continuous_right = not manual_control.continuous_right
+                if manual_control.continuous_right:
+                    manual_control.continuous_left = False  # stop opposite mode
+                    manual_control.continuous_backward = False
                     manual_control.continuous_forward = False
+            elif key == "z":
+                manual_control.is_moving_left = True
+            elif key == "x":
+                manual_control.is_moving_right = True
+            elif key == "y":
+                manual_control.is_moving_forward = True
+            elif key == "h":
+                manual_control.is_moving_backward = True
             elif key_lower == ' ':
                 manual_control.is_moving_forward = False
                 manual_control.is_moving_backward = False

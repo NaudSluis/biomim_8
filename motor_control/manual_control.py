@@ -94,9 +94,7 @@ def keyboard_listener():
 
             if key == "w":
                 continuous_forward = not continuous_forward
-                print(key)
                 if continuous_forward:
-                    print(key)
                     continuous_backward = False  # stop opposite mode
                     continuous_left = False
                     continuous_right = False
