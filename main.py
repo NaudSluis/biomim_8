@@ -1,3 +1,7 @@
+"""
+Main control file for the robot control
+"""
+
 from motor_control.calibrate import calibrate
 from motor_control.manual_control import start_manual_control
 from arduino_upload.uploader import upload_arduino_code
@@ -5,6 +9,12 @@ from motor_control.test_wash import demo
 
 
 def main(answer: str):
+    """
+    Control function for robot
+    
+    :param answer: answer typed in by user via input
+    :type answer: str
+    """
     try:
         if answer not in ['a', 'c', 't', 'm']:
             raise ValueError("Invalid input.")

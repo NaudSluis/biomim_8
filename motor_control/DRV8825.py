@@ -1,3 +1,6 @@
+"""
+This is a package downloaded that is made for the driver
+"""
 import RPi.GPIO as GPIO
 import time
 

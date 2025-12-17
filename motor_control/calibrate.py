@@ -2,7 +2,7 @@
 Calibration script using the updated manual control setup.
 No pynput dependency; works over SSH or local terminal.
 """
-
+import select
 import json
 import time
 import threading
@@ -13,7 +13,9 @@ from motor_control import manual_control
 
 
 def get_key_nonblocking():
-    import select
+    """
+    Get key press from keyboard
+    """
     dr, _, _ = select.select([sys.stdin], [], [], 0)
     if dr:
         return sys.stdin.read(1)
@@ -65,7 +67,6 @@ def dump_to_json(x_axis, y_axis):
 def calibration_listener():
     """
     Terminal-based listener for calibration.
-    Supports W/S single step, E/D continuous, SPACE stop, Enter = save, ESC = exit.
     """
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -94,26 +95,26 @@ def calibration_listener():
             if key == "w":
                 manual_control.continuous_forward = not manual_control.continuous_forward
                 if manual_control.continuous_forward:
-                    manual_control.continuous_backward = False  # stop opposite mode
+                    manual_control.continuous_backward = False  # stop opposite modes
                     manual_control.continuous_left = False
                     manual_control.continuous_right = False
                     
             elif key == "a":
                 manual_control.continuous_left = not manual_control.continuous_left
                 if manual_control.continuous_left:
-                    manual_control.continuous_right = False  # stop opposite mode
+                    manual_control.continuous_right = False  # stop opposite modes
                     manual_control.continuous_backward = False
                     manual_control.continuous_forward = False
             elif key == "s":
                 manual_control.continuous_backward = not manual_control.continuous_backward
                 if manual_control.continuous_backward:
-                    manual_control.continuous_forward = False  # stop opposite mode
+                    manual_control.continuous_forward = False  # stop opposite modes
                     manual_control.continuous_left = False
                     manual_control.continuous_right = False
             elif key == "d":
                 manual_control.continuous_right = not manual_control.continuous_right
                 if manual_control.continuous_right:
-                    manual_control.continuous_left = False  # stop opposite mode
+                    manual_control.continuous_left = False  # stop opposite modes
                     manual_control.continuous_backward = False
                     manual_control.continuous_forward = False
             elif key == "z":
@@ -124,16 +125,16 @@ def calibration_listener():
                 manual_control.is_moving_forward = True
             elif key == "h":
                 manual_control.is_moving_backward = True
-            elif key_lower == ' ':
+            elif key_lower == ' ': # stop movement
                 manual_control.is_moving_forward = False
                 manual_control.is_moving_backward = False
                 manual_control.continuous_forward = False
                 manual_control.continuous_backward = False
-            elif key in ('\n', '\r'):  # ENTER
+            elif key in ('\n', '\r'):  # ENTER to save
                 dump_to_json(manual_control.x_axis, manual_control.y_axis)
                 print("Position saved, exiting calibration...")
                 manual_control.running = False
-            elif key == '\x1b':  # ESC
+            elif key == '\x1b':  # ESC to exit to main
                 manual_control.running = False
 
     finally:
@@ -141,7 +142,10 @@ def calibration_listener():
 
 
 def start_calibration_control():
-    """Start the motor control thread and terminal listener."""
+    """
+    Start the motor control thread and terminal listener. Threading is used
+    to both 'listen' to keys typed and at the same time control the motors.
+    """
     try:
         reset_manual_state()
 

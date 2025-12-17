@@ -5,11 +5,13 @@ from .DRV8825 import DRV8825
 import time
 import serial
 from datetime import datetime
-# from motor_control.pump import send_arduino_signal
-#Initialize motors
 
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
 Motor1.SetMicroStep('softward', 'fullstep')
+
+Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
+Motor2.SetMicroStep('softward', '1/32step')
+
 
 
 def get_calibrated_postion(json_file: str):
@@ -42,7 +44,9 @@ def get_calibrated_postion(json_file: str):
 
 def move_to_position(calibrated_x, calibrated_y):
     """
-    Moves device to the position determined from earlier calibration
+    Moves device to the position in amount of steps. If else is used to determine whether the motor should
+    move forwards or backwards. That could be used for relative positions, for example if you would
+    want to move 10 back from the window to spray water
     
     :param calibrated_x: amount of steps on the x-axis
     :param calibrated_y: amount of steps on the y-axis
@@ -50,34 +54,34 @@ def move_to_position(calibrated_x, calibrated_y):
     try:
         if calibrated_x < 0 and calibrated_y > 0:
             for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.000001)
+                Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.005)
 
             for _ in range(calibrated_x):
-                # Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.000001)
+                Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.005)
                 time.sleep(0.01)
 
         elif calibrated_x > 0 and calibrated_y < 0:
             for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.000001)
+                Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.005)
 
             for _ in range(calibrated_x):
-                # Motor2.TurnStep(Dir='forward', steps=20, stepdelay=0.000001)
+                Motor2.TurnStep(Dir='forward', steps=20, stepdelay=0.005)
                 time.sleep(0.01)
 
         elif calibrated_x < 0 and calibrated_y < 0:
             for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.000001)
+                Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.005)
 
             for _ in range(calibrated_x):
-                # Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.000001)
+                Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.005)
                 time.sleep(0.01)
 
         else:
             for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.000001)
+                Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.005)
 
             for _ in range(calibrated_x):
-                # Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.000001)
+                Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.005)
                 time.sleep(0.01)
 
     except Exception as e:

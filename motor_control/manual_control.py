@@ -1,3 +1,7 @@
+"""
+This file is the base for the control of the robot.
+"""
+
 import sys
 import termios
 import tty
@@ -6,6 +10,7 @@ import serial
 import threading
 from .DRV8825 import DRV8825
 
+# For pin layout, checkout the Waveshare stepper HAT wiki
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
 Motor1.SetMicroStep('softward', '1/32step')
 
@@ -21,12 +26,15 @@ is_moving_right = False     # single step
 continuous_left = False     # toggle
 continuous_right = False    # toggle
 
-y_axis = 0
-x_axis = 0
+y_axis = 0 # Used for calibration counter
+x_axis = 0 # Used for calibration counter
 running = True
 
 
 def initialize_connection():
+    """
+    Initializes connection with the Arduino
+    """
     try:
         ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
         time.sleep(2)
@@ -35,8 +43,14 @@ def initialize_connection():
     return ser
 
 def send_arduino_signal(ser, signal):
-
+    """
+    Sends commands to the arduino, which (are supposed to) correspond to the commands in the .ino file
+    
+    :param ser: Serial connection initilized by, for example, 'initialize_connection()'
+    :param signal: Description
+    """
     try:
+        # Adds \n so that the arduino code know when to stop reading
         ser.write((signal + "\n").encode("utf-8"))
         time.sleep(0.5)
 
@@ -50,6 +64,9 @@ def send_arduino_signal(ser, signal):
     return
 
 def get_key_nonblocking():
+    """
+    Get key press from keyboard
+    """
     import select
     dr, _, _ = select.select([sys.stdin], [], [], 0)
     if dr:
@@ -57,6 +74,9 @@ def get_key_nonblocking():
     return None
 
 def keyboard_listener():
+    """
+    Terminal-based listener for calibration.
+    """
     global is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward, running
     global is_moving_left, is_moving_right
@@ -149,16 +169,17 @@ def keyboard_listener():
         ser.close()
 
 def step_motor_forward():
-    Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.000001)
+    # Increase step or decrease delay for higher speed until 0.05
+    Motor1.TurnStep(Dir='forward', steps=20, stepdelay=0.005)
 
 def step_motor_backward():
-    Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.000001)
+    Motor1.TurnStep(Dir='backward', steps=20, stepdelay=0.005)
 
 def step_motor_right():
-    Motor2.TurnStep(Dir='forward', steps=20, stepdelay=0.000001)
+    Motor2.TurnStep(Dir='forward', steps=20, stepdelay=0.005)
 
 def step_motor_left():
-    Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.000001)
+    Motor2.TurnStep(Dir='backward', steps=20, stepdelay=0.005)
 
 def motor_control_loop():
     global running, is_moving_forward, is_moving_backward
