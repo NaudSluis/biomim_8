@@ -196,11 +196,11 @@ def motor_control_loop():
             x_axis -= 1
 
         elif continuous_right:
-            step_motor_backward()
+            step_motor_right()
             x_axis += 1
 
         elif continuous_left:
-            step_motor_backward()
+            step_motor_left()
             x_axis -= 1
 
 
