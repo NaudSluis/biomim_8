@@ -124,9 +124,11 @@ def keyboard_listener():
             elif key == "r":
                 send_arduino_signal(ser, 'rotate')
             elif key == "z":
-                is_moving_left = True
+                # is_moving_left = True
+                send_arduino_signal(ser, 'backward')
             elif key == "x":
-                is_moving_right = True
+                # is_moving_right = True
+                send_arduino_signal(ser, 'forward')
             elif key == "y":
                 is_moving_forward = True
             elif key == "h":
