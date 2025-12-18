@@ -27,10 +27,13 @@ void pump(AF_DCMotor &motor_one, AF_DCMotor &motor_two, int time) {
   // Run a pump for x amount of time
   // param motor: specify motor
   // param time: amount of time in miliseconds
-  motor.setSpeed(255);
-  motor.run(FORWARD);
+  motor_one.setSpeed(255);
+  motor_two.setSpeed(255);
+  motor_one.run(FORWARD);
+  motor_two.run(FORWARD);
   delay(time);
-  motor.run(RELEASE);
+  motor_one.run(RELEASE);
+  motor_one.run(RELEASE);
 }
 
 void turn_servo_const() {
