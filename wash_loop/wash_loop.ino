@@ -15,13 +15,15 @@ Servo servo2;
 // Motors
 AF_DCMotor motor1(1);  // M1
 AF_DCMotor motor2(2);  // M2
+AF_DCMotor motor3(3);  // M3
+AF_DCMotor motor4(4);  // M4
 
 void setup() {
   Serial.begin(9600);
   Serial.println("System initialized");
 }
 
-void pump(AF_DCMotor &motor, int time) {
+void pump(AF_DCMotor &motor_one, AF_DCMotor &motor_two, int time) {
   // Run a pump for x amount of time
   // param motor: specify motor
   // param time: amount of time in miliseconds
@@ -67,10 +69,10 @@ void loop() {
     Serial.println(command);
 
     if (command == "pump_soap") {
-      pump(motor1, 30000);
+      pump(motor1, motor2, 30000);
     }
     else if (command == "pump_water") {
-      pump(motor2, 30000);
+      pump(motor3, motor4 30000);
     }
     else if (command == "rotate") {
       turn_servo_const();
