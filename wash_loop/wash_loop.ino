@@ -75,7 +75,7 @@ void loop() {
       pump(motor1, motor2, 30000);
     }
     else if (command == "pump_water") {
-      pump(motor3, motor4 30000);
+      pump(motor3, motor4, 30000);
     }
     else if (command == "rotate") {
       turn_servo_const();
