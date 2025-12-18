@@ -44,7 +44,7 @@ void turn_servo_const() {
 void turn_servo_degree_forward() {
   // Turn degree servo to 180 degree
   servo2.attach(servo2Pin);
-  servo2.write(180);
+  servo2.write(90);
   delay(2500);
   servo2.detach();
 }
