@@ -97,8 +97,8 @@ def keyboard_listener():
     print("  A = toggle continuous left")
     print("  S = toggle continuous down")
     print("  D = toggle continuous right")
-    print("  Q = Pump soap")
-    print("  D = Pump water")
+    print("  E = Pump soap")
+    print("  Q = Pump water")
     print("  R = Rotate Sponge")
     print("  X = Step right")
     print("  Z = Step left")
@@ -142,9 +142,9 @@ def keyboard_listener():
                     continuous_backward = False
                     continuous_forward = False
             elif key == "e":
-                send_arduino_signal(ser, "pump_water")
-            elif key == "q":
                 send_arduino_signal(ser, "pump_soap")
+            elif key == "q":
+                send_arduino_signal(ser, "pump_water")
             elif key == "r":
                 send_arduino_signal(ser, "rotate")
             elif key == "z":

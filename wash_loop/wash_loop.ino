@@ -67,10 +67,10 @@ void loop() {
     Serial.println(command);
 
     if (command == "pump_soap") {
-      pump(motor1, 5000);
+      pump(motor1, 30000);
     }
     else if (command == "pump_water") {
-      pump(motor2, 5000);
+      pump(motor2, 30000);
     }
     else if (command == "rotate") {
       turn_servo_const();
