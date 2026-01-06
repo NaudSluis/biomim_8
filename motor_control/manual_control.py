@@ -218,10 +218,12 @@ def motor_control_loop():
         elif is_moving_right:
             step_motor_right()
             x_axis += 1
+            is_moving_right = False
 
         elif is_moving_left:
             step_motor_left()
             x_axis -= 1
+            is_moving_left = False
 
         elif continuous_right:
             step_motor_right()
