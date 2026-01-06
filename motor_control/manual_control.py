@@ -176,20 +176,20 @@ def keyboard_listener():
 
 
 def step_motor_forward():
-    # Increase step or decrease delay for higher speed until 0.05
-    Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.005)
+    # Increase step or decrease delay for higher speed until 
+    Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_backward():
-    Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.005)
+    Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_right():
-    Motor2.TurnStep(Dir="forward", steps=20, stepdelay=0.005)
+    Motor2.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_left():
-    Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.005)
+    Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 
 def motor_control_loop():
