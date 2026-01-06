@@ -118,7 +118,6 @@ def keyboard_listener():
 
             if key == "w":
                 continuous_forward = not continuous_forward
-                print('w')
                 if continuous_forward:
                     continuous_backward = False  # stop opposite mode
                     continuous_left = False
@@ -131,7 +130,6 @@ def keyboard_listener():
                     continuous_backward = False
                     continuous_forward = False
             elif key == "s":
-                print("s")
                 continuous_backward = not continuous_backward
                 if continuous_backward:
                     continuous_forward = False  # stop opposite mode
@@ -150,11 +148,9 @@ def keyboard_listener():
             elif key == "r":
                 send_arduino_signal(ser, "rotate")
             elif key == "z":
-                # is_moving_left = True
-                send_arduino_signal(ser, "backward")
+                is_moving_left = True
             elif key == "x":
-                # is_moving_right = True
-                send_arduino_signal(ser, "forward")
+                is_moving_right = True
             elif key == "y":
                 is_moving_forward = True
             elif key == "h":
@@ -251,6 +247,7 @@ def start_manual_control():
 
     running = False
     Motor1.Stop()
+    Motor2.Stop()
     print("Program exited.")
 
 
