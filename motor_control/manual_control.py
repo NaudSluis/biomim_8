@@ -67,7 +67,7 @@ def on_x_min():
     continuous_right = False
     print("X min endstop hit, all continuous movements stopped.")
 
-x_min.when_pressed = on_x_min
+
 
 def initialize_connection():
     """
@@ -281,6 +281,7 @@ def start_manual_control():
     global running
 
     x_min = Button(0, pull_up=False) 
+    x_min.when_pressed = on_x_min
 
     Motor1, Motor2 = initialize_motors()
 
