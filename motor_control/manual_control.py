@@ -17,7 +17,7 @@ X_MIN_PIN = 0
 # Y_MIN_PIN = 23
 # Y_MAX_PIN = 26
 
-x_min = Button(X_MIN_PIN, pull_up=False)  # switch pulls S to GND when hit
+ # switch pulls S to GND when hit
 # x_max = Button(X_MAX_PIN, pull_up=True)
 # y_min = Button(Y_MIN_PIN, pull_up=True)
 # y_max = Button(Y_MAX_PIN, pull_up=True)
@@ -280,6 +280,8 @@ def motor_control_loop():
 def start_manual_control():
     global running
 
+    x_min = Button(0, pull_up=False) 
+
     Motor1, Motor2 = initialize_motors()
 
     running = True
@@ -304,7 +306,7 @@ def start_manual_control():
     Motor2.enable_pin.close()
 
     x_min.close()
-    
+
     print("Program exited.")
 
 
