@@ -33,11 +33,16 @@ x_min = Button(X_MIN_PIN, pull_up=False)  # switch pulls S to GND when hit
 
 
 # For pin layout, checkout the Waveshare stepper HAT wiki
-Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
-Motor1.SetMicroStep("softward", "1/32step")
+def initialize_motors():
+    """
+    Initializes motors with pin layout
+    """
+    Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
+    Motor1.SetMicroStep("softward", "1/32step")
 
-Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
-Motor2.SetMicroStep("softward", "1/32step")
+    Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
+    Motor2.SetMicroStep("softward", "1/32step")
+    return Motor1, Motor2
 
 is_moving_forward = False  # single step
 is_moving_backward = False  # single step
@@ -206,6 +211,7 @@ def keyboard_listener():
 
 
 def step_motor_forward():
+    global Motor1, Motor2
     # Increase step or decrease delay for higher speed until 
     Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
@@ -273,6 +279,8 @@ def motor_control_loop():
 
 def start_manual_control():
     global running
+
+    Motor1, Motor2 = initialize_motors()
 
     running = True
 
