@@ -10,10 +10,7 @@ import serial
 import threading
 from .DRV8825 import DRV8825
 from gpiozero import Button
-from gpiozero import Device
-from gpiozero.pins.native import NativeFactory
 
-Device.pin_factory = NativeFactory()
 
 # Choose GPIOs for endstops
 X_MIN_PIN = 0
