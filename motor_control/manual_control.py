@@ -12,7 +12,7 @@ from .DRV8825 import DRV8825
 from gpiozero import Button
 
 # Choose GPIOs for endstops
-X_MIN_PIN = 17
+X_MIN_PIN = 0
 # X_MAX_PIN = 6
 # Y_MIN_PIN = 23
 # Y_MAX_PIN = 26
