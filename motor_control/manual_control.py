@@ -10,6 +10,9 @@ import serial
 import threading
 from .DRV8825 import DRV8825
 from gpiozero import Button
+from gpiozero.pins.pigpio import PiGPIOFactory
+
+DeviceFactory = PiGPIOFactory()
 
 
 # Choose GPIOs for endstops
