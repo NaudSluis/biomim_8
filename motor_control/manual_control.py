@@ -10,7 +10,8 @@ import serial
 import threading
 from .DRV8825 import DRV8825
 from gpiozero import Button
-from gpiozero.pins.pigpio import PiGPIOFactory
+from gpiozero import Device
+from gpiozero.pins.rpigpio import PiGPIOFactory
 
 DeviceFactory = PiGPIOFactory()
 
