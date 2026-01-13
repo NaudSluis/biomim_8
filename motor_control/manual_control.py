@@ -9,23 +9,20 @@ import time
 import serial
 import threading
 from .DRV8825 import DRV8825
-# from gpiozero import Button
+from gpiozero import Button
 
-# # Choose GPIOs
-# X_MIN_PIN = 17
-# # X_MAX_PIN = 6
-# # Y_MIN_PIN = 23
-# # Y_MAX_PIN = 26
+# Choose GPIOs for endstops
+X_MIN_PIN = 17
+# X_MAX_PIN = 6
+# Y_MIN_PIN = 23
+# Y_MAX_PIN = 26
 
-# x_min = Button(X_MIN_PIN, pull_up=False)  # switch pulls S to GND when hit
-# # x_max = Button(X_MAX_PIN, pull_up=True)
-# # y_min = Button(Y_MIN_PIN, pull_up=True)
-# # y_max = Button(Y_MAX_PIN, pull_up=True)
+x_min = Button(X_MIN_PIN, pull_up=False)  # switch pulls S to GND when hit
+# x_max = Button(X_MAX_PIN, pull_up=True)
+# y_min = Button(Y_MIN_PIN, pull_up=True)
+# y_max = Button(Y_MAX_PIN, pull_up=True)
 
-# def on_x_min():
-#     global running
-#     running = False
-#     print("X min endstop hit, stopping manual control.")
+
 
 # def on_y_min_manual():
 
@@ -33,7 +30,7 @@ from .DRV8825 import DRV8825
 
 # def on_y_max_manual():
 
-# x_min.when_pressed = on_x_min
+
 
 # For pin layout, checkout the Waveshare stepper HAT wiki
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
@@ -55,6 +52,17 @@ y_axis = 0  # Used for calibration counter
 x_axis = 0  # Used for calibration counter
 running = True
 
+def on_x_min():
+    global continuous_forward, continuous_backward
+    global continuous_left, continuous_right
+
+    continuous_forward = False
+    continuous_backward = False
+    continuous_left = False
+    continuous_right = False
+    print("X min endstop hit, all continuous movements stopped.")
+
+x_min.when_pressed = on_x_min
 
 def initialize_connection():
     """
@@ -143,6 +151,7 @@ def keyboard_listener():
 
             if key == "w":
                 continuous_forward = not continuous_forward
+                print(continuous_forward)
                 if continuous_forward:
                     continuous_backward = False  # stop opposite mode
                     continuous_left = False
