@@ -292,6 +292,19 @@ def start_manual_control():
     running = False
     Motor1.Stop()
     Motor2.Stop()
+
+    for p in Motor1.mode_pins + Motor2.mode_pins:
+        p.close()
+
+    Motor1.dir_pin.close()
+    Motor1.step_pin.close()
+    Motor1.enable_pin.close()
+    Motor2.dir_pin.close()
+    Motor2.step_pin.close()
+    Motor2.enable_pin.close()
+
+    x_min.close()
+    
     print("Program exited.")
 
 
