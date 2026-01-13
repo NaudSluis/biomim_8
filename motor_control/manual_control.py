@@ -9,6 +9,28 @@ import time
 import serial
 import threading
 from .DRV8825 import DRV8825
+from gpiozero import Button
+
+# Choose GPIOs
+# X_MIN_PIN = 5
+# X_MAX_PIN = 6
+# Y_MIN_PIN = 23
+# Y_MAX_PIN = 26
+
+x_min = Button(X_MIN_PIN, pull_up=True)  # switch pulls S to GND when hit
+x_max = Button(X_MAX_PIN, pull_up=True)
+y_min = Button(Y_MIN_PIN, pull_up=True)
+y_max = Button(Y_MAX_PIN, pull_up=True)
+
+def on_x_min_manual():
+
+def on_y_min_manual():
+
+def on_x_max_manual():
+
+def on_y_max_manual():
+
+x_min.when_pressed = on_x_min
 
 # For pin layout, checkout the Waveshare stepper HAT wiki
 Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
