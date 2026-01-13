@@ -280,10 +280,12 @@ def motor_control_loop():
 def start_manual_control():
     global running
 
+    Motor1, Motor2 = initialize_motors()
+
     x_min = Button(0, pull_up=False) 
     x_min.when_pressed = on_x_min
 
-    Motor1, Motor2 = initialize_motors()
+    
 
     running = True
 
