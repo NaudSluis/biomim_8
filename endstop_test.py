@@ -1,7 +1,6 @@
 from gpiozero import Button
 
-X_MIN_PIN = 5
-
+X_MIN_PIN = 11
 
 x_min = Button(X_MIN_PIN, pull_up=True) 
 
