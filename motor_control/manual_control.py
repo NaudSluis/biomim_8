@@ -17,23 +17,15 @@ DeviceFactory = RPiGPIOFactory()
 
 
 # Choose GPIOs for endstops
-X_MIN_PIN = 0
-# X_MAX_PIN = 6
-# Y_MIN_PIN = 23
-# Y_MAX_PIN = 26
+Y_MIN_PIN = 6
+X_MIN_PIN = 5
 
  # switch pulls S to GND when hit
-# x_max = Button(X_MAX_PIN, pull_up=True)
-# y_min = Button(Y_MIN_PIN, pull_up=True)
-# y_max = Button(Y_MAX_PIN, pull_up=True)
+# x_min = Button(X_MIN_PIN, pull_up=True)
 
 
 
-# def on_y_min_manual():
-
-# def on_x_max_manual():
-
-# def on_y_max_manual():
+# def on_x_min_():
 
 
 
@@ -62,7 +54,7 @@ y_axis = 0  # Used for calibration counter
 x_axis = 0  # Used for calibration counter
 running = True
 
-def on_x_min():
+def on_y_min():
     global continuous_forward, continuous_backward
     global continuous_left, continuous_right
 
@@ -70,7 +62,7 @@ def on_x_min():
     continuous_backward = False
     continuous_left = False
     continuous_right = False
-    print("X min endstop hit, all continuous movements stopped.")
+    print("y min endstop hit, all continuous movements stopped.")
 
 
 
@@ -288,8 +280,8 @@ def start_manual_control():
 
     Motor1, Motor2 = initialize_motors()
 
-    x_min = Button(0, pull_up=False) 
-    x_min.when_pressed = on_x_min
+    y_min = Button(6, pull_up=False) 
+    y_min.when_pressed = on_y_min
 
     
 
