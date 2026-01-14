@@ -129,7 +129,7 @@ def keyboard_listener():
     global is_moving_left, is_moving_right
     global continuous_left, continuous_right
 
-    ser = initialize_connection()
+    # ser = initialize_connection()
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -185,12 +185,12 @@ def keyboard_listener():
                     continuous_left = False  # stop opposite mode
                     continuous_backward = False
                     continuous_forward = False
-            elif key == "e":
-                send_arduino_signal(ser, "pump_soap")
-            elif key == "q":
-                send_arduino_signal(ser, "pump_water")
-            elif key == "r":
-                send_arduino_signal(ser, "rotate")
+            # elif key == "e":
+            #     send_arduino_signal(ser, "pump_soap")
+            # elif key == "q":
+            #     send_arduino_signal(ser, "pump_water")
+            # elif key == "r":
+            #     send_arduino_signal(ser, "rotate")
             elif key == "z":
                 is_moving_left = True
             elif key == "x":
@@ -212,7 +212,7 @@ def keyboard_listener():
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        ser.close()
+        # ser.close()
 
 
 def step_motor_forward():
