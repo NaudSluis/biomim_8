@@ -36,8 +36,8 @@ DeviceFactory = RPiGPIOFactory()
 Y_MIN_PIN = 6
 X_MIN_PIN = 5
 
-y_min = Button(Y_MIN_PIN, pull_up=False)
-x_min = Button(X_MIN_PIN, pull_up=False)
+y_min = Button(Y_MIN_PIN, pull_up=True)
+x_min = Button(X_MIN_PIN, pull_up=True)
 
 
 def on_x_min_pressed():
