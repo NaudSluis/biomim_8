@@ -6,8 +6,6 @@ import time
 import serial
 from datetime import datetime
 
-Motor1, Motor2 = initialize_motors()
-
 
 def get_calibrated_postion(json_file: str):
     """
@@ -42,6 +40,7 @@ def move_to_position(calibrated_x, calibrated_y, step_delay=0.005):
     Moves device to the calibrated position.
     Steps are always positive; direction is determined by sign of coordinates.
     """
+    global Motor1, Motor2
     # Move Y axis
     steps_y = abs(calibrated_y)
     dir_y = "forward" if calibrated_y >= 0 else "backward"
@@ -60,6 +59,10 @@ def demo():
     """
     Performs one washing cycle and logs to json
     """
+    global Motor1, Motor2
+
+    Motor1, Motor2, pump1, pump2, speed_control1, speed_control2 = initialize_motors()
+
     start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
@@ -77,18 +80,19 @@ def demo():
         move_to_position(calibrated_x - 10, calibrated_y)  # Move to spray position
         time.sleep(10)
 
-        
+        pump_one_forward(speed=0.5, duration=5)
         time.sleep(5)
 
         move_to_position(10, 0)
         time.sleep(0)
-
+        
+        pump_two_forward(speed=0.5, duration=5)
         time.sleep(5)
 
         move_to_position(-10, 0)  # Move back to spray
         time.sleep(0)
 
-        send_arduino_signal(ser, "pump_water")  # Water pump in the future
+ # Water pump in the future
         time.sleep(5)
 
         move_to_home()
@@ -96,11 +100,6 @@ def demo():
     except Exception as e:
         print(f"Error during demo: {e}")
         return
-    finally:
-        try:
-            ser.close()
-        except Exception as e:
-            print(f"Error closing serial connection: {e}")
 
 
     end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
