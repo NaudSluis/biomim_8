@@ -284,6 +284,7 @@ def motor_control_loop():
 
 def start_manual_control():
     global running
+    global Motor1, Motor2
 
     Motor1, Motor2 = initialize_motors()
 
