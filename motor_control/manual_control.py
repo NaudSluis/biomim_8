@@ -12,6 +12,7 @@ from .DRV8825 import DRV8825
 from gpiozero import Button
 from gpiozero import Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
+from gpiozero import Motor, PWMOutputDevice
 
 is_moving_forward = False  # single step
 is_moving_backward = False  # single step
@@ -72,6 +73,39 @@ def on_y_min_released():
     y_min_pressed.clear()
     print("y min endstop released.")
 
+# Pins for pump one
+ENA = 8  # PWM pin (speed)
+IN1 = 9  # Direction pin 1
+IN2 = 10  # Direction pin 2
+
+# Pins for pump two
+IN3 = 11  # Direction pin 1
+IN4 = 23   # Direction pin 2
+ENB = 25  # PWM pin (speed)
+
+def pump_one_forward(speed=1.0, duration=10):
+    """
+    Runs motor forward at given speed (0.0-1.0) for duration in seconds
+    """
+    global pump1, speed_control1
+    speed_control1.value = speed  # Set speed
+    pump1.forward()
+    time.sleep(duration)
+    pump1.stop()
+    speed_control1.value = 0
+
+def pump_two_forward(speed=1.0, duration=10):
+    """
+    Runs motor forward at given speed (0.0-1.0) for duration in seconds
+    """
+    global pump2, speed_control2
+    speed_control2.value = speed  # Set speed
+    pump2.forward()
+    time.sleep(duration)
+    pump2.stop()
+    speed_control2.value = 0
+
+
 # For pin layout, checkout the Waveshare stepper HAT wiki
 def initialize_motors():
     """
@@ -82,7 +116,13 @@ def initialize_motors():
 
     Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
     Motor2.SetMicroStep("softward", "1/32step")
-    return Motor1, Motor2
+
+    pump1 = Motor(forward=IN1, backward=IN2, pwm=True)
+    speed_control1 = PWMOutputDevice(ENA)
+
+    pump2 = Motor(forward=IN3, backward=IN4, pwm=True)
+    speed_control2 = PWMOutputDevice(ENB)
+    return Motor1, Motor2, pump1, pump2, speed_control1, speed_control2
 
 
 
@@ -124,7 +164,7 @@ def get_key_nonblocking():
     """
     Get key press from keyboard
     """
-    import select
+    import selectmotor_forward(speed=0.8, duration=10)
 
     dr, _, _ = select.select([sys.stdin], [], [], 0)
     if dr:
@@ -197,6 +237,10 @@ def keyboard_listener():
                     continuous_forward = False
             elif key == "r":
                 send_arduino_signal(ser, "rotate")
+            elif key == "e":
+                pump_one_forward(speed=0.8, duration=10)
+            elif key == "q":
+                pump_two_forward(speed=0.8, duration=10)
             elif key == "z":
                 is_moving_left = True
             elif key == "x":
@@ -298,8 +342,9 @@ def motor_control_loop():
 def start_manual_control():
     global running
     global Motor1, Motor2
+    global pump1, pump2, speed_control1, speed_control2
 
-    Motor1, Motor2 = initialize_motors()
+    Motor1, Motor2, pump1, pump2, speed_control1, speed_control2 = initialize_motors()
 
     y_min.when_pressed = on_y_min_pressed
     y_min.when_released = on_y_min_released

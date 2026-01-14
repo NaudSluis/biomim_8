@@ -57,7 +57,7 @@ def reset_manual_state():
     try:
         print("Resetting manual control state...")
         # Ensure motors are initialized
-        manual_control.Motor1, manual_control.Motor2 = manual_control.initialize_motors()
+        manual_control.Motor1, manual_control.Motor2, manual_control.pump1, manual_control.pump2, manual_control.speed_control1, manual_control.speed_control2 = manual_control.initialize_motors()
 
         # Homing first
         move_to_home()
