@@ -37,7 +37,7 @@ Y_MIN_PIN = 6
 X_MIN_PIN = 5
 
 y_min = Button(Y_MIN_PIN, pull_up=False)
-x_min = Button(X_MIN_PIN, pull_up=True)
+x_min = Button(X_MIN_PIN, pull_up=False)
 
 
 def on_x_min_pressed():
@@ -299,11 +299,9 @@ def start_manual_control():
 
     Motor1, Motor2 = initialize_motors()
 
-    y_min = Button(6, pull_up=False) 
     y_min.when_pressed = on_y_min_pressed
     y_min.when_released = on_y_min_released
 
-    x_min = Button(5, pull_up=True) 
     x_min.when_pressed = on_x_min_pressed
     x_min.when_released = on_x_min_released
 
