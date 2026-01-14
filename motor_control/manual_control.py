@@ -164,7 +164,7 @@ def get_key_nonblocking():
     """
     Get key press from keyboard
     """
-    import selectmotor_forward(speed=0.8, duration=10)
+    import select
 
     dr, _, _ = select.select([sys.stdin], [], [], 0)
     if dr:
