@@ -60,6 +60,8 @@ def on_y_min_pressed():
     global continuous_forward, continuous_backward
     global continuous_left, continuous_right
 
+    y_min_pressed.set()
+
     continuous_forward = False
     continuous_backward = False
     continuous_left = False
