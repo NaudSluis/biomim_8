@@ -15,33 +15,55 @@ The goal of this robot is to clean the window of the Mini-DOAS as good as possib
 
 - 1x RPi5 (with SD)
 - 1x Waveshare Stepper HAT
-- 1x Keyestudio v4 (basically an Arduino UNO)
-- 1x HW-130 Motor control shield with L293D driver
-- 1x USB-A to USB-B Cable
+- 1x L298N motor driver module
 - 1x NEMA17 1.8 degree stepper motor
 - 1x 28BYJ-48 5v stepper motor
-- 4x DC-motor (waterpumps) 3-5v
+- 2x 12v waterpump
 - 1x Continuous servo 5v
-- 4x Mechanical stops
-- 2x Waterflow sensors
+- 2x Mechanical stops
 - 1x powersupply RPi5
-- 1x Powersupply Arduino
-- 1x Powersupply Stepper HAT (12v, 2-3A)
-- 1x Powersupply Motor control shield (5v)
+- 1x Powersupply Stepper HAT (9-12v, 2-3A)
+- 1x Powersupply L298N 12v
 
-The Pi forms the basis of the system. The stepper HAT is mounted on top of the Pi, to which the NEMA17 is attached. The other stepper is not attached to the HAT, due to the fact that it is a unipolor stepper instead of a bipolar (I read you could connect it if you would not use the middle gnd wire). To this HAT, attach the 12, 2-3A powersupply. Connect the Arduino via the USB cable and mount the Motor Shield on the Arduino. Screw in the 4 DC pumps, attach the servo and attach the steppermotor. Use a powersupply for both the arduino and the HAT, make sure the HAT does not get more than 7v, preferably a bit less. (**_NOTE:_** write about sensors and stops)
+The Pi forms the basis of the system. The stepper HAT is mounted on top of the Pi, to which the NEMA17 and 28BYJ-48 are attached. In the image below you can find how the rest of the hardware should be connected to the pins.
+
+![RPI5 Pin layout scheme](pin_layout.png)
+
 
 #### Use in pactice
 
 Before setting up the Hardware (or atleast more than you can carry to a watersafe location), connect your laptop to the Pi via ssh. You can use this [turtorial](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh) for example. 
 
-Setup the rest of the Hardware as above. (**_NOTE:_** write about tubes, nozzles, and the system in general)
+Before we connect the stepper HAT to the Pi, make the stepper HAT compatible for both the 2-3A NEMA17 and the 500mA 28BYJ-48. Do this by checking the current through M1 and M2 and adjusting where needed, as described in the [HAT's own documentation](https://www.waveshare.com/wiki/Stepper_Motor_HAT#Current_Setting). Make sure to attach the HAT's powersupply and switching the power to 'On'. 
 
-To activate the program, move to the working directory and use ```python3 main.py``` to activate the system. Here you can choose to either upload now code to the Arduino (instead of doing it via the Arduino IDE UI), do a calibration, a test or use manual controls. 
+If you do not check this beforehand, you risk that either one is getting to low or, in the case of the small stepper, to high of a current; the latter resulting in overheating.
+
+![Waveshare steper HAT](stepperhat_layout.png)
+
+Attach the NEMA17 to the white A2A1B1B2 insert, as seen in the top of the image of the HAT. Attacht the small stepper motor the to male 5VA3B3A4B4 insert (the red wire should go into the 5v).
+
+Wire the rest of hardware as in the pin layout given above. 
+
+Now attach the controlwires for the L298N, using the using the pin list below to their corresponding pin denoted on the driver module:
+
+* ENA = 8 
+* IN1 = 9
+* IN2 = 10
+* IN3 = 11
+* IN4 = 23
+* ENB = 25
+
+Also attach the 12v powersupply to the driver module.
+
+To the pumps, attach the tubes and run them through the bottomplate. Attach the nozzle to the tube and then the nozzle to the clip on each side of the hood.
+
+To activate the program, move to the working directory and use ```python3 main.py``` to activate the system. Here you can choose to either do a calibration, a test or use manual controls. 
 
 If you just want to control the robot, use manual. If you want to calibrate the right position for autonomous washing, use calibration. To do a test run, use test! The controls will be displayed when activated. 
 
 #### Error Handeling
+
+
 
 
 ```Error opening serial port '/dev/ttyUSB0': No such file or directory```  

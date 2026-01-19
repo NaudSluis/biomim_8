@@ -108,6 +108,7 @@ def calibration_listener():
         print("  Z = Step left")
         print("  Y = Step up")
         print("  H = Step Down")
+        print("  P = save house calibration")
         print("  SPACE = stop")
         print("  ENTER = save calibration")
         print("  ESC = quit")
