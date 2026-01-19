@@ -78,7 +78,7 @@ def reset_manual_state():
         print(f"Error resetting manual state: {e}")
 
 
-def dump_to_json(x_axis, y_axis):
+def dump_to_json(x_axis, y_axis, filename="motor_control/calibration_info.json"):
     """Save calibration positions to JSON."""
     coords = {"end position x": x_axis, "end position y": y_axis}
     print(coords)
@@ -169,6 +169,9 @@ def calibration_listener():
                 manual_control.continuous_left = False
                 manual_control.continuous_right = False
 
+            elif key == 'p':  # ENTER = save calibration
+                dump_to_json(manual_control.x_axis, manual_control.y_axis, filename="motor_control/calibration_house.json")
+        
             elif key in ("\n", "\r"):  # ENTER = save calibration
                 dump_to_json(manual_control.x_axis, manual_control.y_axis)
                 print("Calibration saved, exiting...")

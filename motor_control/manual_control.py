@@ -12,7 +12,7 @@ from .DRV8825 import DRV8825
 from gpiozero import Button
 from gpiozero import Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
-from gpiozero import Motor, PWMOutputDevice
+from gpiozero import Motor, PWMOutputDevice, servo
 
 is_moving_forward = False  # single step
 is_moving_backward = False  # single step
@@ -73,6 +73,20 @@ def on_y_min_released():
     y_min_pressed.clear()
     print("y min endstop released.")
 
+Servo = servo.Servo(26)
+
+def rotate_sponge():
+    """
+    Rotates the sponge by moving the servo
+    """
+    global Servo
+    Servo.min()
+    time.sleep(2.5)
+    Servo.max()
+    time.sleep(2.5)
+    Servo.mid()
+    time.sleep(1)
+
 # Pins for pump one
 ENA = 8  # PWM pin (speed)
 IN1 = 9  # Direction pin 1
@@ -122,6 +136,7 @@ def initialize_motors():
 
     pump2 = Motor(forward=IN3, backward=IN4, pwm=True)
     speed_control2 = PWMOutputDevice(ENB)
+
     return Motor1, Motor2, pump1, pump2, speed_control1, speed_control2
 
 
@@ -236,7 +251,7 @@ def keyboard_listener():
                     continuous_backward = False
                     continuous_forward = False
             elif key == "r":
-                send_arduino_signal(ser, "rotate")
+                rotate_sponge()
             elif key == "e":
                 pump_one_forward(speed=0.8, duration=10)
             elif key == "q":
