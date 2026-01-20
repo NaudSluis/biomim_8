@@ -12,7 +12,7 @@ import threading
 from .DRV8825 import DRV8825
 from gpiozero import Button
 from gpiozero import Device
-from gpiozero.pins.pigpio import PiGPIOFactory
+from gpiozero.pins.pigpio import RPiGPIOFactory
 from gpiozero import Motor, PWMOutputDevice, Servo
 
 is_moving_forward = False  # single step
@@ -358,7 +358,7 @@ def start_manual_control():
     global pump1, pump2
     global servo, y_min, x_min, DeviceFactory
 
-    Device.pin_factory = PiGPIOFactory()
+    Device.pin_factory = RPiGPIOFactory()
 
     y_min = Button(Y_MIN_PIN, pull_up=True)
     x_min = Button(X_MIN_PIN, pull_up=True)
