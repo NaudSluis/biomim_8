@@ -73,7 +73,7 @@ def on_y_min_released():
     y_min_pressed.clear()
     print("y min endstop released.")
 
-Servo = servo.Servo(26)
+Servo = Servo.Servo(26)
 
 def rotate_sponge():
     """
