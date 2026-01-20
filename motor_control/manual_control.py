@@ -12,7 +12,7 @@ from .DRV8825 import DRV8825
 from gpiozero import Button
 from gpiozero import Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
-from gpiozero import Motor, PWMOutputDevice, servo
+from gpiozero import Motor, PWMOutputDevice, Servo
 
 is_moving_forward = False  # single step
 is_moving_backward = False  # single step
