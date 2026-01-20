@@ -73,12 +73,16 @@ def on_y_min_released():
     y_min_pressed.clear()
     print("y min endstop released.")
 
-servo = Servo(26)
+try:
+    servo = Servo(26)
+except Exception as e:
+    print(f"Error initializing servo on pin 26: {e}")
 
 def rotate_sponge():
     """
     Rotates the sponge by moving the servo
     """
+    print("Rotating sponge...")
     global servo
     servo.min()
     time.sleep(2.5)
