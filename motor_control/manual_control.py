@@ -105,23 +105,19 @@ def pump_one_forward(speed=1.0, duration=10):
     """
     Runs motor forward at given speed (0.0-1.0) for duration in seconds
     """
-    global pump1, speed_control1
-    speed_control1.value = speed  # Set speed
-    pump1.forward()
+    global pump1
+    pump1.forward(speed)
     time.sleep(duration)
     pump1.stop()
-    speed_control1.value = 0
 
 def pump_two_forward(speed=1.0, duration=10):
     """
     Runs motor forward at given speed (0.0-1.0) for duration in seconds
     """
-    global pump2, speed_control2
-    speed_control2.value = speed  # Set speed
-    pump2.forward()
+    global pump2
+    pump2.forward(speed)
     time.sleep(duration)
     pump2.stop()
-    speed_control2.value = 0
 
 
 # For pin layout, checkout the Waveshare stepper HAT wiki
@@ -136,15 +132,13 @@ def initialize_motors():
     Motor2.SetMicroStep("softward", "1/32step")
 
     try:
-        pump1 = Motor(forward=IN1, backward=IN2, pwm=True)
-        speed_control1 = PWMOutputDevice(ENA)
+        pump1 = Motor(forward=IN1, backward=IN2, enable=ENA, pwm=True)
 
-        pump2 = Motor(forward=IN3, backward=IN4, pwm=True)
-        speed_control2 = PWMOutputDevice(ENB)
+        pump2 = Motor(forward=IN3, backward=IN4, enable=ENB, pwm=True)
     except Exception as e:
         print(f"Error initializing pumps: {e}")
 
-    return Motor1, Motor2, pump1, pump2, speed_control1, speed_control2
+    return Motor1, Motor2, pump1, pump2
 
 
 
