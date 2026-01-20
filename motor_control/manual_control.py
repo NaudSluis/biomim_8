@@ -358,9 +358,9 @@ def motor_control_loop():
 def start_manual_control():
     global running
     global Motor1, Motor2
-    global pump1, pump2, speed_control1, speed_control2
+    global pump1, pump2
 
-    Motor1, Motor2, pump1, pump2, speed_control1, speed_control2 = initialize_motors()
+    Motor1, Motor2, pump1, pump2 = initialize_motors()
 
     y_min.when_pressed = on_y_min_pressed
     y_min.when_released = on_y_min_released

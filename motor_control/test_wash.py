@@ -62,7 +62,7 @@ def demo():
     """
     global Motor1, Motor2
 
-    Motor1, Motor2, pump1, pump2, speed_control1, speed_control2 = initialize_motors()
+    Motor1, Motor2, pump1, pump2 = initialize_motors()
 
     start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
