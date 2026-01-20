@@ -135,11 +135,14 @@ def initialize_motors():
     Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
     Motor2.SetMicroStep("softward", "1/32step")
 
-    pump1 = Motor(forward=IN1, backward=IN2, pwm=True)
-    speed_control1 = PWMOutputDevice(ENA)
+    try:
+        pump1 = Motor(forward=IN1, backward=IN2, pwm=True)
+        speed_control1 = PWMOutputDevice(ENA)
 
-    pump2 = Motor(forward=IN3, backward=IN4, pwm=True)
-    speed_control2 = PWMOutputDevice(ENB)
+        pump2 = Motor(forward=IN3, backward=IN4, pwm=True)
+        speed_control2 = PWMOutputDevice(ENB)
+    except Exception as e:
+        print(f"Error initializing pumps: {e}")
 
     return Motor1, Motor2, pump1, pump2, speed_control1, speed_control2
 
