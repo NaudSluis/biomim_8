@@ -196,7 +196,7 @@ def keyboard_listener():
     global is_moving_left, is_moving_right
     global continuous_left, continuous_right
 
-    ser = initialize_connection()
+    # ser = initialize_connection()
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
