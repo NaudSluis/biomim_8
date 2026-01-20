@@ -12,7 +12,7 @@ import threading
 from .DRV8825 import DRV8825
 from gpiozero import Button
 from gpiozero import Device
-from gpiozero.pins.rpigpio import RPiGPIOFactory
+from gpiozero.pins.pigpio import PiGPIOFactory
 from gpiozero import Motor, PWMOutputDevice, Servo
 
 is_moving_forward = False  # single step
@@ -28,18 +28,21 @@ y_axis = 0  # Used for calibration counter
 x_axis = 0  # Used for calibration counter
 running = True
 
+servo = None
+y_min = None
+x_min = None
+DeviceFactory = None
+
+
 # Ensures that variables work across threads
 y_min_pressed = threading.Event()
 x_min_pressed = threading.Event()
 
-DeviceFactory = RPiGPIOFactory()
 
 # Choose GPIOs for endstops
 Y_MIN_PIN = 6
 X_MIN_PIN = 5
 
-y_min = Button(Y_MIN_PIN, pull_up=True)
-x_min = Button(X_MIN_PIN, pull_up=True)
 
 
 def on_x_min_pressed():
@@ -74,23 +77,20 @@ def on_y_min_released():
     y_min_pressed.clear()
     print("y min endstop released.")
 
-try:
-    servo = Servo(26)
-except Exception as e:
-    print(f"Error initializing servo on pin 26: {e}")
-
 def rotate_sponge():
-    """
-    Rotates the sponge by moving the servo
-    """
-    print("Rotating sponge...")
     global servo
+    if servo is None:
+        print("Servo not initialized")
+        return
+
+    print("Rotating sponge...")
     servo.min()
     time.sleep(2.5)
     servo.max()
     time.sleep(2.5)
     servo.mid()
-    time.sleep(1)
+    servo.detach()  # stop pulses → no drift
+
 
 # Pins for pump one
 ENA = 8  # PWM pin (speed)
@@ -126,18 +126,15 @@ def initialize_motors():
     """
     Initializes motors with pin layout
     """
+    global ENA, IN1, IN2, IN3, IN4, ENB
     Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
     Motor1.SetMicroStep("softward", "1/32step")
 
     Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
     Motor2.SetMicroStep("softward", "1/32step")
 
-    try:
-        pump1 = Motor(forward=IN1, backward=IN2, enable=ENA, pwm=True)
-
-        pump2 = Motor(forward=IN3, backward=IN4, enable=ENB, pwm=True)
-    except Exception as e:
-        print(f"Error initializing pumps: {e}")
+    pump1 = Motor(forward=IN1, backward=IN2, enable=ENA, pwm=True)
+    pump2 = Motor(forward=IN3, backward=IN4, enable=ENB, pwm=True)
 
     return Motor1, Motor2, pump1, pump2
 
@@ -359,6 +356,19 @@ def start_manual_control():
     global running
     global Motor1, Motor2
     global pump1, pump2
+    global servo, y_min, x_min, DeviceFactory
+
+    Device.pin_factory = PiGPIOFactory()
+
+    y_min = Button(Y_MIN_PIN, pull_up=True)
+    x_min = Button(X_MIN_PIN, pull_up=True)
+
+    try:
+        servo = Servo(26)
+        servo.detach()   # VERY IMPORTANT
+    except Exception as e:
+        print(f"Servo init failed: {e}")
+        servo = None
 
     Motor1, Motor2, pump1, pump2 = initialize_motors()
 
@@ -378,6 +388,9 @@ def start_manual_control():
     running = False
     Motor1.Stop()
     Motor2.Stop()
+    if servo:
+        servo.detach()
+
 
     for p in Motor1.mode_pins + Motor2.mode_pins:
         p.close()
