@@ -3,7 +3,7 @@ Main control file for the robot control
 """
 
 from motor_control.calibrate import calibrate
-from motor_control.manual_control import start_manual_control
+from motor_control.manual_control import start_manual_control 
 from arduino_upload.uploader import upload_arduino_code
 from motor_control.test_wash import demo
 

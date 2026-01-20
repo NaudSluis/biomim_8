@@ -1,6 +1,7 @@
 """
 This file is the base for the control of the robot.
 """
+print("manual_control import started")
 
 import sys
 import termios
@@ -278,7 +279,6 @@ def keyboard_listener():
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        ser.close()
 
 
 def step_motor_forward():
@@ -286,7 +286,6 @@ def step_motor_forward():
 
 def step_motor_backward():
     Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
-
 
 def step_motor_right():
     Motor2.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
@@ -354,6 +353,7 @@ def motor_control_loop():
             time.sleep(0.01)
 
 
+print("manual_control fully loaded")
 
 def start_manual_control():
     global running
