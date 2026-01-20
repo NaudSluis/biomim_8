@@ -73,18 +73,18 @@ def on_y_min_released():
     y_min_pressed.clear()
     print("y min endstop released.")
 
-Servo = Servo.Servo(26)
+servo = Servo(26)
 
 def rotate_sponge():
     """
     Rotates the sponge by moving the servo
     """
-    global Servo
-    Servo.min()
+    global servo
+    servo.min()
     time.sleep(2.5)
-    Servo.max()
+    servo.max()
     time.sleep(2.5)
-    Servo.mid()
+    servo.mid()
     time.sleep(1)
 
 # Pins for pump one
