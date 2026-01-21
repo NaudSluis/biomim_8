@@ -346,8 +346,12 @@ def on_x_min_pressed():
     continuous_left = False
     continuous_right = False
 
-    move_to_position(10, 0)  # Move away from endstop
+    end = time.monotonic() + 3
 
+    while time.monotonic() < end:
+        continuous_left = True
+
+    continuous_left = False
     
     print("x min endstop hit, all continuous movements stopped.")
 
@@ -366,8 +370,12 @@ def on_y_min_pressed():
     continuous_left = False
     continuous_right = False
 
-    move_to_position(0, 10)  # Move away from endstop
+    end = time.monotonic() + 3
 
+    while time.monotonic() < end:
+        continuous_left = True
+
+    continuous_left = False
 
     print("y min endstop hit, all continuous movements stopped.")
 
