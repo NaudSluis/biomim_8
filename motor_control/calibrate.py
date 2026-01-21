@@ -1,7 +1,8 @@
 """
-Calibration script using the updated manual control setup.
-No pynput dependency; works over SSH or local terminal.
+Calibration script using the updated manual_control architecture.
+Works over SSH or local terminal.
 """
+
 import select
 import json
 import time
@@ -9,211 +10,203 @@ import threading
 import sys
 import termios
 import tty
+
 from motor_control import manual_control
 
 
+# -------------------- Keyboard --------------------
+
 def get_key_nonblocking():
-    """Get key press from keyboard"""
     dr, _, _ = select.select([sys.stdin], [], [], 0)
     if dr:
         return sys.stdin.read(1)
     return None
 
 
+# -------------------- Homing --------------------
+
 def move_to_home():
     """
-    Move both axes to their respective min endstops.
-    Homing stops immediately when endstop is pressed.
+    Home both axes using the motor_control_loop.
+    Motion stops immediately on endstop trigger.
     """
     print("Homing in progress...")
-    # Homing speed: number of steps per iteration
-    step_delay = 0.00001  # very small delay for fast homing
 
-    # Y axis homing
-    while not manual_control.y_min_pressed.is_set() and manual_control.running:
-        manual_control.Motor1.TurnStep(Dir="backward", steps=1, stepdelay=step_delay)
-        manual_control.y_axis -= 1
+    # ---- Y axis (move DOWN toward Y-min) ----
+    manual_control.continuous_backward = True
+    while not manual_control.y_min_pressed.is_set():
+        time.sleep(0.01)
+    manual_control.continuous_backward = False
+    print("Y axis homed")
 
-    print("Y axis homed.")
+    time.sleep(0.2)  # small settle delay
 
-    # X axis homing
-    while not manual_control.x_min_pressed.is_set() and manual_control.running:
-        manual_control.Motor2.TurnStep(Dir="backward", steps=1, stepdelay=step_delay)
-        manual_control.x_axis -= 1
+    # ---- X axis (move LEFT toward X-min) ----
+    manual_control.continuous_left = True
+    while not manual_control.x_min_pressed.is_set():
+        time.sleep(0.01)
+    manual_control.continuous_left = False
+    print("X axis homed")
 
-    print("X axis homed.")
-
-    # Reset counters after homing
+    # Reset counters
     manual_control.x_axis = 0
     manual_control.y_axis = 0
-    print("Homing complete.")
 
+    print("Homing complete")
+
+
+# -------------------- Reset State --------------------
 
 def reset_manual_state():
     """
-    Reset motor step counters and flags in manual_control.
-    Performs homing before calibration starts.
+    Reset flags and perform homing.
+    Must be called AFTER motor_control_loop is running.
     """
-    try:
-        print("Resetting manual control state...")
-        # Ensure motors are initialized
-        manual_control.Motor1, manual_control.Motor2, manual_control.pump1, manual_control.pump2, manual_control.speed_control1, manual_control.speed_control2 = manual_control.initialize_motors()
+    print("Resetting manual control state...")
 
-        # Homing first
-        move_to_home()
+    manual_control.is_moving_forward = False
+    manual_control.is_moving_backward = False
+    manual_control.is_moving_left = False
+    manual_control.is_moving_right = False
 
-        # Stop any motion flags
-        manual_control.is_moving_forward = False
-        manual_control.is_moving_backward = False
-        manual_control.continuous_forward = False
-        manual_control.continuous_backward = False
-        manual_control.is_moving_left = False
-        manual_control.is_moving_right = False
-        manual_control.continuous_left = False
-        manual_control.continuous_right = False
+    manual_control.continuous_forward = False
+    manual_control.continuous_backward = False
+    manual_control.continuous_left = False
+    manual_control.continuous_right = False
 
-        print("Manual state reset complete.")
+    move_to_home()
 
-    except Exception as e:
-        print(f"Error resetting manual state: {e}")
+    print("Manual state reset complete")
 
+
+# -------------------- Save Calibration --------------------
 
 def dump_to_json(x_axis, y_axis, filename="motor_control/calibration_info.json"):
-    """Save calibration positions to JSON."""
-    coords = {"end position x": x_axis, "end position y": y_axis}
-    print(coords)
-    try:
-        with open("motor_control/calibration_info.json", "w") as fp:
-            json.dump(coords, fp)
-        print("Calibration info saved to JSON.")
-    except Exception as e:
-        print(f"Error dumping to JSON: {e}")
+    coords = {
+        "end_position_x": x_axis,
+        "end_position_y": y_axis
+    }
 
+    try:
+        with open(filename, "w") as fp:
+            json.dump(coords, fp, indent=2)
+        print(f"Calibration saved to {filename}")
+    except Exception as e:
+        print(f"Failed to save calibration: {e}")
+
+
+# -------------------- Calibration UI --------------------
 
 def calibration_listener():
-    """
-    Terminal-based listener for calibration.
-    """
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     tty.setcbreak(fd)
 
-    try:
-        print("Calibration controls:")
-        print("  W = toggle continuous up")
-        print("  A = toggle continuous left")
-        print("  S = toggle continuous down")
-        print("  D = toggle continuous right")
-        print("  X = Step right")
-        print("  Z = Step left")
-        print("  Y = Step up")
-        print("  H = Step Down")
-        print("  P = save house calibration")
-        print("  SPACE = stop")
-        print("  ENTER = save calibration")
-        print("  ESC = quit")
+    print("\nCalibration controls:")
+    print("  W = continuous up")
+    print("  A = continuous left")
+    print("  S = continuous down")
+    print("  D = continuous right")
+    print("  Y = step up")
+    print("  H = step down")
+    print("  Z = step left")
+    print("  X = step right")
+    print("  SPACE = stop all")
+    print("  ENTER = save calibration & exit")
+    print("  ESC = quit without saving\n")
 
+    try:
         while manual_control.running:
             key = get_key_nonblocking()
             if not key:
                 time.sleep(0.01)
                 continue
 
-            key_lower = key.lower()
+            key = key.lower()
 
-            # Continuous movement toggles
-            if key_lower == "w":
+            # Continuous motion
+            if key == "w":
                 manual_control.continuous_forward = not manual_control.continuous_forward
-                if manual_control.continuous_forward:
-                    manual_control.continuous_backward = False
-                    manual_control.continuous_left = False
-                    manual_control.continuous_right = False
-
-            elif key_lower == "a":
-                manual_control.continuous_left = not manual_control.continuous_left
-                if manual_control.continuous_left:
-                    manual_control.continuous_right = False
-                    manual_control.continuous_forward = False
-                    manual_control.continuous_backward = False
-
-            elif key_lower == "s":
-                manual_control.continuous_backward = not manual_control.continuous_backward
-                if manual_control.continuous_backward:
-                    manual_control.continuous_forward = False
-                    manual_control.continuous_left = False
-                    manual_control.continuous_right = False
-
-            elif key_lower == "d":
-                manual_control.continuous_right = not manual_control.continuous_right
-                if manual_control.continuous_right:
-                    manual_control.continuous_left = False
-                    manual_control.continuous_forward = False
-                    manual_control.continuous_backward = False
-
-            # Single step movements
-            elif key_lower == "z":
-                manual_control.is_moving_left = True
-            elif key_lower == "x":
-                manual_control.is_moving_right = True
-            elif key_lower == "y":
-                manual_control.is_moving_forward = True
-            elif key_lower == "h":
-                manual_control.is_moving_backward = True
-
-            elif key == " ":  # stop all movement
-                manual_control.is_moving_forward = False
-                manual_control.is_moving_backward = False
-                manual_control.continuous_forward = False
                 manual_control.continuous_backward = False
-                manual_control.is_moving_left = False
-                manual_control.is_moving_right = False
                 manual_control.continuous_left = False
                 manual_control.continuous_right = False
 
-            elif key == 'p':  # ENTER = save calibration
-                dump_to_json(manual_control.x_axis, manual_control.y_axis, filename="motor_control/calibration_house.json")
-        
-            elif key in ("\n", "\r"):  # ENTER = save calibration
+            elif key == "a":
+                manual_control.continuous_left = not manual_control.continuous_left
+                manual_control.continuous_right = False
+                manual_control.continuous_forward = False
+                manual_control.continuous_backward = False
+
+            elif key == "s":
+                manual_control.continuous_backward = not manual_control.continuous_backward
+                manual_control.continuous_forward = False
+                manual_control.continuous_left = False
+                manual_control.continuous_right = False
+
+            elif key == "d":
+                manual_control.continuous_right = not manual_control.continuous_right
+                manual_control.continuous_left = False
+                manual_control.continuous_forward = False
+                manual_control.continuous_backward = False
+
+            # Single steps
+            elif key == "y":
+                manual_control.is_moving_forward = True
+            elif key == "h":
+                manual_control.is_moving_backward = True
+            elif key == "z":
+                manual_control.is_moving_left = True
+            elif key == "x":
+                manual_control.is_moving_right = True
+
+            # Stop
+            elif key == " ":
+                manual_control.continuous_forward = False
+                manual_control.continuous_backward = False
+                manual_control.continuous_left = False
+                manual_control.continuous_right = False
+
+            # Save & exit
+            elif key in ("\n", "\r"):
                 dump_to_json(manual_control.x_axis, manual_control.y_axis)
-                print("Calibration saved, exiting...")
                 manual_control.running = False
 
-            elif key == "\x1b":  # ESC = quit
+            # Exit without saving
+            elif key == "\x1b":
                 manual_control.running = False
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
+# -------------------- Entry Point --------------------
+
 def start_calibration_control():
-    """
-    Start the motor control thread and terminal listener.
-    """
-    try:
-        reset_manual_state()
-
-        manual_control.running = True
-
-        motor_thread = threading.Thread(target=manual_control.motor_control_loop, daemon=True)
-        motor_thread.start()
-
-        calibration_listener()
-
-        manual_control.running = False
-        manual_control.Motor1.Stop()
-        manual_control.Motor2.Stop()
-        print("Calibration exited cleanly.")
-
-    except Exception as e:
-        print(f"Error in calibration control: {e}")
-
-
-def calibrate():
-    """Entry point for calibration."""
     print("Starting calibration in 2 seconds...")
     time.sleep(2)
-    start_calibration_control()
+
+    # Initialize motors & GPIO
+    manual_control.start_manual_control = False  # safety if imported elsewhere
+    manual_control.running = True
+
+    motor_thread = threading.Thread(
+        target=manual_control.motor_control_loop,
+        daemon=True
+    )
+    motor_thread.start()
+
+    # Perform homing AFTER motor thread is alive
+    reset_manual_state()
+
+    # Enter UI
+    calibration_listener()
+
+    # Shutdown
+    manual_control.running = False
+    manual_control.Motor1.Stop()
+    manual_control.Motor2.Stop()
+    print("Calibration exited cleanly")
 
 
 if __name__ == "__main__":
-    calibrate()
+    start_calibration_control()
