@@ -366,7 +366,7 @@ def stop_all_motion():
 def back_off_x_endstop():
     global continuous_left
 
-    end = time.monotonic() + 3
+    end = time.monotonic() + 1
 
     while time.monotonic() < end:
         continuous_left = True
@@ -379,7 +379,7 @@ def back_off_y_endstop():
     global continuous_forward
 
     try:
-        end = time.monotonic() + 3
+        end = time.monotonic() + 1
         while time.monotonic() < end:
             continuous_forward = True
             time.sleep(0.01)
