@@ -1,8 +1,6 @@
 """
 This file is the base for the control of the robot.
 """
-print("manual_control import started")
-
 import sys
 import termios
 import tty
@@ -13,7 +11,7 @@ from .DRV8825 import DRV8825
 from gpiozero import Button
 from gpiozero import Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
-from gpiozero import Motor, PWMOutputDevice, Servo
+from gpiozero import Motor, Servo
 
 is_moving_forward = False  # single step
 is_moving_backward = False  # single step
@@ -24,8 +22,6 @@ is_moving_right = False  # single step
 continuous_left = False  # toggle
 continuous_right = False  # toggle
 
-y_backoff_running = threading.Event()
-x_backoff_running = threading.Event()
 
 y_axis = 0  # Used for calibration counter
 x_axis = 0  # Used for calibration counter
@@ -39,20 +35,22 @@ DeviceFactory = None
 # Ensures that variables work across threads
 y_min_pressed = threading.Event()
 x_min_pressed = threading.Event()
+y_backoff_running = threading.Event() 
+x_backoff_running = threading.Event()
 
 # Choose GPIOs for endstops
 Y_MIN_PIN = 6
 X_MIN_PIN = 5
 
 # Pins for pump one
-ENA = 8  # PWM pin (speed)
+# ENA = 8  # PWM pin (speed)
 IN1 = 9  # Direction pin 1
 IN2 = 10  # Direction pin 2
 
 # Pins for pump two
 IN3 = 11  # Direction pin 1
 IN4 = 23   # Direction pin 2
-ENB = 25  # PWM pin (speed)
+# ENB = 25  # PWM pin (speed)
 
 
 def rotate_sponge():
@@ -67,7 +65,7 @@ def rotate_sponge():
     servo.max()
     time.sleep(2.5)
     servo.mid()
-    servo.detach()  # stop pulses → no drift
+    servo.detach()
 
 def pump_one_forward(speed=1.0, duration=10):
     """
@@ -93,53 +91,18 @@ def initialize_motors():
     """
     Initializes motors with pin layout
     """
-    global ENA, IN1, IN2, IN3, IN4, ENB
+    global IN1, IN2, IN3, IN4
+
     Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
     Motor1.SetMicroStep("softward", "1/32step")
 
     Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
     Motor2.SetMicroStep("softward", "1/32step")
 
-    pump1 = Motor(forward=IN1, backward=IN2, enable=ENA, pwm=True)
-    pump2 = Motor(forward=IN3, backward=IN4, enable=ENB, pwm=True)
+    pump1 = Motor(forward=IN1, backward=IN2)
+    pump2 = Motor(forward=IN3, backward=IN4)
 
     return Motor1, Motor2, pump1, pump2
-
-
-
-def initialize_connection():
-    """
-    Initializes connection with the Arduino
-    """
-    try:
-        ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1)
-        time.sleep(2)
-    except serial.SerialException as e:
-        print(f"Error opening serial port: {e}", flush=True)
-    return ser
-
-
-def send_arduino_signal(ser, signal):
-    """
-    Sends commands to the arduino, which (are supposed to) correspond to the commands in the .ino file
-
-    :param ser: Serial connection initilized by, for example, 'initialize_connection()'
-    :param signal: Description
-    """
-    try:
-        # Adds \n so that the arduino code know when to stop reading
-        ser.write((signal + "\n").encode("utf-8"))
-        time.sleep(0.5)
-
-        while ser.in_waiting > 0:
-            line = ser.readline().decode("utf-8").strip()
-            if line:
-                print(f"Arduino Response: {line}", flush=True)
-    except Exception as e:
-        print(f"Error during serial communication: {e}", flush=True)
-
-    return
-
 
 def get_key_nonblocking():
     """
@@ -162,8 +125,6 @@ def keyboard_listener():
     global is_moving_left, is_moving_right
     global continuous_left, continuous_right
 
-    # ser = initialize_connection()
-
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     tty.setcbreak(fd)
@@ -174,6 +135,8 @@ def keyboard_listener():
     print("  S = toggle continuous down")
     print("  D = toggle continuous right")
     print("  R = Rotate Sponge")
+    print("  E = Pump One Forward")
+    print("  Q = Pump Two Forward")
     print("  X = Step right")
     print("  Z = Step left")
     print("  Y = Step up")
@@ -268,65 +231,34 @@ def motor_control_loop():
     global y_axis, x_axis
 
     while running:
-
         # -------- Y AXIS --------
+        if is_moving_forward or continuous_forward:
+            step_motor_forward()
+            y_axis += 1
+            is_moving_forward = False  # single step consumed
 
-        # Move UP (blocked by Y min)
-        if is_moving_forward:
-            if not y_min_pressed.is_set():
-                step_motor_forward()
-                y_axis += 1
-            is_moving_forward = False
-
-        elif continuous_forward:
-            if not y_min_pressed.is_set():
-                step_motor_forward()
-                y_axis += 1
-            else:
-                time.sleep(0.005)
-
-        # Move DOWN (ALWAYS allowed → backing off)
-        elif is_moving_backward:
-            step_motor_backward()
-            y_axis -= 1
+        if is_moving_backward or continuous_backward:
+            # Optional: block by Y min if you want
+            if not y_min_pressed.is_set():  # or remove check to always allow backward
+                step_motor_backward()
+                y_axis -= 1
             is_moving_backward = False
 
-        elif continuous_backward:
-            step_motor_backward()
-            y_axis -= 1
-
         # -------- X AXIS --------
+        if is_moving_left or continuous_left:
+            step_motor_left()
+            x_axis -= 1
+            is_moving_left = False  # single step consumed
 
-        # Move LEFT (blocked by X min)
-        elif is_moving_left:
-            if not x_min_pressed.is_set():
-                step_motor_left()
-                x_axis -= 1
-            is_moving_left = False
-
-        elif continuous_left:
-            if not x_min_pressed.is_set():
-                step_motor_left()
-                x_axis -= 1
-            else:
-                time.sleep(0.005)
-
-        # Move RIGHT (ALWAYS allowed → backing off)
-        elif is_moving_right:
-            step_motor_right()
-            x_axis += 1
+        if is_moving_right or continuous_right:
+            # Optional: block by X min if needed
+            if not x_min_pressed.is_set():  # or remove check to always allow right
+                step_motor_right()
+                x_axis += 1
             is_moving_right = False
 
-        elif continuous_right:
-            step_motor_right()
-            x_axis += 1
-
-        else:
-            time.sleep(0.005)
-
-
-
-print("manual_control fully loaded")
+        # Small sleep to prevent CPU hog
+        time.sleep(0.005)
 
 def move_to_position(calibrated_x, calibrated_y, step_delay=0.005):
     """
@@ -420,8 +352,6 @@ def on_y_min_pressed():
         target=back_off_y_endstop,
         daemon=True
     ).start()
-
-
 
     print("y min endstop hit, all continuous movements stopped.")
 
