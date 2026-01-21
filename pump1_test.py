@@ -15,7 +15,7 @@ Device.pin_factory = RPiGPIOFactory()
 IN1 = 9   # Forward
 IN2 = 10  # Backward
 
-def test_pump1(speed=1.0, duration=5):
+def test_pump1(speed=1.0, duration=2):
     print("Initializing pump1...")
     # Note: omit 'enable' since you're not using it
     pump1 = Motor(forward=IN1, backward=IN2)
