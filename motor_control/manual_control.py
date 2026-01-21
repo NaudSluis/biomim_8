@@ -341,12 +341,14 @@ def on_x_min_pressed():
 
     x_min_pressed.set()
 
-    move_to_position(10, 0)  # Move away from endstop
-
     continuous_forward = False
     continuous_backward = False
     continuous_left = False
     continuous_right = False
+
+    move_to_position(10, 0)  # Move away from endstop
+
+    
     print("x min endstop hit, all continuous movements stopped.")
 
 def on_x_min_released():
@@ -359,12 +361,14 @@ def on_y_min_pressed():
 
     y_min_pressed.set()
 
-    move_to_position(0, 10)  # Move away from endstop
-
     continuous_forward = False
     continuous_backward = False
     continuous_left = False
     continuous_right = False
+
+    move_to_position(0, 10)  # Move away from endstop
+
+
     print("y min endstop hit, all continuous movements stopped.")
 
 def on_y_min_released():
