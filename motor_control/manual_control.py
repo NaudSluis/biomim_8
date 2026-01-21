@@ -24,6 +24,9 @@ is_moving_right = False  # single step
 continuous_left = False  # toggle
 continuous_right = False  # toggle
 
+y_backoff_running = threading.Event()
+x_backoff_running = threading.Event()
+
 y_axis = 0  # Used for calibration counter
 x_axis = 0  # Used for calibration counter
 running = True
@@ -257,14 +260,18 @@ def step_motor_left():
 
 
 def motor_control_loop():
-    global running, is_moving_forward, is_moving_backward
+    global running
+    global is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward
     global is_moving_left, is_moving_right
     global continuous_left, continuous_right
     global y_axis, x_axis
 
     while running:
+
         # -------- Y AXIS --------
+
+        # Move UP (blocked by Y min)
         if is_moving_forward:
             if not y_min_pressed.is_set():
                 step_motor_forward()
@@ -276,8 +283,9 @@ def motor_control_loop():
                 step_motor_forward()
                 y_axis += 1
             else:
-                time.sleep(0.01)
+                time.sleep(0.005)
 
+        # Move DOWN (ALWAYS allowed → backing off)
         elif is_moving_backward:
             step_motor_backward()
             y_axis -= 1
@@ -288,6 +296,8 @@ def motor_control_loop():
             y_axis -= 1
 
         # -------- X AXIS --------
+
+        # Move LEFT (blocked by X min)
         elif is_moving_left:
             if not x_min_pressed.is_set():
                 step_motor_left()
@@ -299,8 +309,9 @@ def motor_control_loop():
                 step_motor_left()
                 x_axis -= 1
             else:
-                time.sleep(0.01)
+                time.sleep(0.005)
 
+        # Move RIGHT (ALWAYS allowed → backing off)
         elif is_moving_right:
             step_motor_right()
             x_axis += 1
@@ -311,7 +322,8 @@ def motor_control_loop():
             x_axis += 1
 
         else:
-            time.sleep(0.01)
+            time.sleep(0.005)
+
 
 
 print("manual_control fully loaded")
@@ -335,23 +347,60 @@ def move_to_position(calibrated_x, calibrated_y, step_delay=0.005):
         Motor2.TurnStep(Dir=dir_x, steps=20, stepdelay=step_delay)
         time.sleep(0.01)
 
-def on_x_min_pressed():
+def stop_all_motion():
+    global is_moving_forward, is_moving_backward
+    global is_moving_left, is_moving_right
     global continuous_forward, continuous_backward
     global continuous_left, continuous_right
 
-    x_min_pressed.set()
+    is_moving_forward = False
+    is_moving_backward = False
+    is_moving_left = False
+    is_moving_right = False
 
     continuous_forward = False
     continuous_backward = False
     continuous_left = False
     continuous_right = False
 
+def back_off_x_endstop():
+    global continuous_left
+
     end = time.monotonic() + 3
 
     while time.monotonic() < end:
         continuous_left = True
+        time.sleep(0.01)  # allow motor loop to run
 
     continuous_left = False
+    x_backoff_running.clear()
+
+def back_off_y_endstop():
+    global continuous_backward
+
+    try:
+        end = time.monotonic() + 3
+        while time.monotonic() < end:
+            continuous_backward = True
+            time.sleep(0.01)
+    finally:
+        continuous_backward = False
+        y_backoff_running.clear()
+
+
+
+def on_x_min_pressed():
+    if x_backoff_running.is_set():
+        return  # already backing off
+
+    x_min_pressed.set()
+    stop_all_motion()
+
+    x_backoff_running.set()
+    threading.Thread(
+        target=back_off_x_endstop,
+        daemon=True
+    ).start()
     
     print("x min endstop hit, all continuous movements stopped.")
 
@@ -360,22 +409,19 @@ def on_x_min_released():
     print("x min endstop released.")
 
 def on_y_min_pressed():
-    global continuous_forward, continuous_backward
-    global continuous_left, continuous_right
+    if y_backoff_running.is_set():
+        return  # already backing off
 
     y_min_pressed.set()
+    stop_all_motion()
 
-    continuous_forward = False
-    continuous_backward = False
-    continuous_left = False
-    continuous_right = False
+    y_backoff_running.set()
+    threading.Thread(
+        target=back_off_y_endstop,
+        daemon=True
+    ).start()
 
-    end = time.monotonic() + 3
 
-    while time.monotonic() < end:
-        continuous_left = True
-
-    continuous_left = False
 
     print("y min endstop hit, all continuous movements stopped.")
 
