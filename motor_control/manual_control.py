@@ -33,49 +33,24 @@ y_min = None
 x_min = None
 DeviceFactory = None
 
-
 # Ensures that variables work across threads
 y_min_pressed = threading.Event()
 x_min_pressed = threading.Event()
-
 
 # Choose GPIOs for endstops
 Y_MIN_PIN = 6
 X_MIN_PIN = 5
 
+# Pins for pump one
+ENA = 8  # PWM pin (speed)
+IN1 = 9  # Direction pin 1
+IN2 = 10  # Direction pin 2
 
+# Pins for pump two
+IN3 = 11  # Direction pin 1
+IN4 = 23   # Direction pin 2
+ENB = 25  # PWM pin (speed)
 
-def on_x_min_pressed():
-    global continuous_forward, continuous_backward
-    global continuous_left, continuous_right
-
-    x_min_pressed.set()
-
-    continuous_forward = False
-    continuous_backward = False
-    continuous_left = False
-    continuous_right = False
-    print("x min endstop hit, all continuous movements stopped.")
-
-def on_x_min_released():
-    x_min_pressed.clear()
-    print("x min endstop released.")
-
-def on_y_min_pressed():
-    global continuous_forward, continuous_backward
-    global continuous_left, continuous_right
-
-    y_min_pressed.set()
-
-    continuous_forward = False
-    continuous_backward = False
-    continuous_left = False
-    continuous_right = False
-    print("y min endstop hit, all continuous movements stopped.")
-
-def on_y_min_released():
-    y_min_pressed.clear()
-    print("y min endstop released.")
 
 def rotate_sponge():
     global servo
@@ -90,17 +65,6 @@ def rotate_sponge():
     time.sleep(2.5)
     servo.mid()
     servo.detach()  # stop pulses → no drift
-
-
-# Pins for pump one
-ENA = 8  # PWM pin (speed)
-IN1 = 9  # Direction pin 1
-IN2 = 10  # Direction pin 2
-
-# Pins for pump two
-IN3 = 11  # Direction pin 1
-IN4 = 23   # Direction pin 2
-ENB = 25  # PWM pin (speed)
 
 def pump_one_forward(speed=1.0, duration=10):
     """
@@ -351,6 +315,61 @@ def motor_control_loop():
 
 
 print("manual_control fully loaded")
+
+def move_to_position(calibrated_x, calibrated_y, step_delay=0.005):
+    """
+    Moves device to the calibrated position.
+    Steps are always positive; direction is determined by sign of coordinates.
+    """
+    global Motor1, Motor2
+    # Move Y axis
+    steps_y = abs(calibrated_y)
+    dir_y = "forward" if calibrated_y >= 0 else "backward"
+    for _ in range(steps_y):
+        Motor1.TurnStep(Dir=dir_y, steps=20, stepdelay=step_delay)
+
+    # Move X axis
+    steps_x = abs(calibrated_x)
+    dir_x = "forward" if calibrated_x >= 0 else "backward"
+    for _ in range(steps_x):
+        Motor2.TurnStep(Dir=dir_x, steps=20, stepdelay=step_delay)
+        time.sleep(0.01)
+
+def on_x_min_pressed():
+    global continuous_forward, continuous_backward
+    global continuous_left, continuous_right
+
+    x_min_pressed.set()
+
+    move_to_position(10, 0)  # Move away from endstop
+
+    continuous_forward = False
+    continuous_backward = False
+    continuous_left = False
+    continuous_right = False
+    print("x min endstop hit, all continuous movements stopped.")
+
+def on_x_min_released():
+    x_min_pressed.clear()
+    print("x min endstop released.")
+
+def on_y_min_pressed():
+    global continuous_forward, continuous_backward
+    global continuous_left, continuous_right
+
+    y_min_pressed.set()
+
+    move_to_position(0, 10)  # Move away from endstop
+
+    continuous_forward = False
+    continuous_backward = False
+    continuous_left = False
+    continuous_right = False
+    print("y min endstop hit, all continuous movements stopped.")
+
+def on_y_min_released():
+    y_min_pressed.clear()
+    print("y min endstop released.")
 
 def start_manual_control():
     global running

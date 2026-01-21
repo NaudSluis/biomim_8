@@ -1,6 +1,6 @@
 import json
 from motor_control.calibrate import move_to_home
-from motor_control.manual_control import initialize_motors, pump_one_forward, pump_two_forward, rotate_sponge
+from motor_control.manual_control import initialize_motors, pump_one_forward, pump_two_forward, rotate_sponge, move_to_position
 from .DRV8825 import DRV8825
 import time
 import serial
@@ -33,28 +33,6 @@ def get_calibrated_postion(json_file: str):
         return None, None
 
     return calibrated_x, calibrated_y
-
-
-
-def move_to_position(calibrated_x, calibrated_y, step_delay=0.005):
-    """
-    Moves device to the calibrated position.
-    Steps are always positive; direction is determined by sign of coordinates.
-    """
-    global Motor1, Motor2
-    # Move Y axis
-    steps_y = abs(calibrated_y)
-    dir_y = "forward" if calibrated_y >= 0 else "backward"
-    for _ in range(steps_y):
-        Motor1.TurnStep(Dir=dir_y, steps=20, stepdelay=step_delay)
-
-    # Move X axis
-    steps_x = abs(calibrated_x)
-    dir_x = "forward" if calibrated_x >= 0 else "backward"
-    for _ in range(steps_x):
-        Motor2.TurnStep(Dir=dir_x, steps=20, stepdelay=step_delay)
-        time.sleep(0.01)
-
 
 def demo():
     """
