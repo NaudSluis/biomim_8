@@ -11,7 +11,7 @@ import sys
 import termios
 import tty
 
-from motor_control import manual_control
+from . import manual_control
 
 
 # -------------------- Keyboard --------------------
