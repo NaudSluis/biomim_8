@@ -1,38 +1,34 @@
 """
-Test L298N motor driver with Raspberry Pi (IN1/IN2, no ENA)
-Runs motor forward and backward for 2 seconds each
+Simple test for pump1 without PWM enable pin.
+Runs pump1 forward for a few seconds, then stops.
 """
 
 import time
-from gpiozero import DigitalOutputDevice
+from gpiozero import Motor
+from gpiozero import Device
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 
-# Use BCM pin numbering
-IN1 = 9
-IN2 = 10
+# Use the same pin factory as your main code
+Device.pin_factory = RPiGPIOFactory()
 
-# Setup as simple digital outputs
-motor_in1 = DigitalOutputDevice(IN1)
-motor_in2 = DigitalOutputDevice(IN2)
+# Pins for pump one (direction pins only)
+IN1 = 9   # Forward
+IN2 = 10  # Backward
 
-def forward(duration=2):
-    print("Motor forward")
-    motor_in1.on()
-    motor_in2.off()
-    time.sleep(duration)
-    motor_in1.off()
-    motor_in2.off()
+def test_pump1(speed=1.0, duration=2):
+    print("Initializing pump1...")
+    # Note: omit 'enable' since you're not using it
+    pump1 = Motor(forward=IN1, backward=IN2)
 
-def backward(duration=2):
-    print("Motor backward")
-    motor_in1.off()
-    motor_in2.on()
-    time.sleep(duration)
-    motor_in1.off()
-    motor_in2.off()
+    try:
+        print(f"Running pump1 forward at full speed for {duration} seconds")
+        pump1.forward(speed)  # speed is 0..1, ignored if no PWM
+        time.sleep(duration)
+    finally:
+        print("Stopping pump1")
+        pump1.stop()
+        pump1.close()
 
 if __name__ == "__main__":
-    print("Starting pump test (2s forward, 2s backward)")
-    forward()
-    time.sleep(1)
-    backward()
-    print("Pump test complete")
+    test_pump1()
+    print("Pump1 test complete.")
