@@ -379,7 +379,7 @@ def back_off_y_endstop():
     global continuous_forward
 
     try:
-        end = time.monotonic() + 1
+        end = time.monotonic() + 0.5
         while time.monotonic() < end:
             continuous_forward = True
             time.sleep(0.01)
