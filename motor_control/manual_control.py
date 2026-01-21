@@ -260,7 +260,7 @@ def motor_control_loop():
         # Small sleep to prevent CPU hog
         time.sleep(0.005)
 
-def move_to_position(calibrated_x, calibrated_y, step_delay=0.005):
+def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
     """
     Moves device to the calibrated position.
     Steps are always positive; direction is determined by sign of coordinates.

@@ -57,29 +57,28 @@ def demo():
             return
         
 
-        move_to_position(calibrated_x - 10, calibrated_y)  # Move to spray position
+        move_to_position(calibrated_x - 100, calibrated_y)  # Move to spray position
         time.sleep(10)
 
         pump_one_forward(speed=0.8, duration=10)
         time.sleep(5)
 
-        move_to_position(10, 0)
-        time.sleep(0)
+        move_to_position(100, 0)
+        time.sleep(2)
 
         rotate_sponge()
         time.sleep(6)
         
-
-        move_to_position(-10, 0)  # Move back to spray
+        move_to_position(-100, 0)  # Move back to spray
         time.sleep(5)
 
         pump_two_forward(speed=0.8, duration=10)
         time.sleep(10)
         
         move_to_home()
-        time.sleep(15)
+        time.sleep(5)
 
-        move_to_position(calibrated_x_house, 0)  # Move to house position
+        # move_to_position(calibrated_x_house, 0)  # Move to house position
         
 
         
