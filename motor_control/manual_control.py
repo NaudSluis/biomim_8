@@ -376,15 +376,15 @@ def back_off_x_endstop():
     x_backoff_running.clear()
 
 def back_off_y_endstop():
-    global continuous_backward
+    global continuous_forward
 
     try:
         end = time.monotonic() + 3
         while time.monotonic() < end:
-            continuous_backward = True
+            continuous_forward = True
             time.sleep(0.01)
     finally:
-        continuous_backward = False
+        continuous_forward = False
         y_backoff_running.clear()
 
 
