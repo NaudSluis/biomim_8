@@ -12,6 +12,9 @@ import termios
 import tty
 
 from . import manual_control
+from .manual_control import initialize_motors
+from gpiozero import Button, Device
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 
 
 # -------------------- Keyboard --------------------
@@ -185,8 +188,25 @@ def start_calibration_control():
     print("Starting calibration in 2 seconds...")
     time.sleep(2)
 
+    # Initialize GPIO and endstops
+    Device.pin_factory = RPiGPIOFactory()
+    
+    y_min = Button(manual_control.Y_MIN_PIN, pull_up=True)
+    x_min = Button(manual_control.X_MIN_PIN, pull_up=True)
+    
+    y_min.when_pressed = manual_control.on_y_min_pressed
+    y_min.when_released = manual_control.on_y_min_released
+    
+    x_min.when_pressed = manual_control.on_x_min_pressed
+    x_min.when_released = manual_control.on_x_min_released
+
     # Initialize motors & GPIO
-    manual_control.start_manual_control = False  # safety if imported elsewhere
+    Motor1, Motor2, pump1, pump2 = initialize_motors()
+    manual_control.Motor1 = Motor1
+    manual_control.Motor2 = Motor2
+    manual_control.pump1 = pump1
+    manual_control.pump2 = pump2
+    
     manual_control.running = True
 
     motor_thread = threading.Thread(
@@ -194,6 +214,9 @@ def start_calibration_control():
         daemon=True
     )
     motor_thread.start()
+    
+    # Give thread time to start
+    time.sleep(0.1)
 
     # Perform homing AFTER motor thread is alive
     reset_manual_state()
@@ -203,8 +226,29 @@ def start_calibration_control():
 
     # Shutdown
     manual_control.running = False
-    manual_control.Motor1.Stop()
-    manual_control.Motor2.Stop()
+    Motor1.Stop()
+    Motor2.Stop()
+    
+    # Clean up GPIO pins
+    if hasattr(Motor1, 'dir_pin') and Motor1.dir_pin:
+        Motor1.dir_pin.close()
+    if hasattr(Motor1, 'step_pin') and Motor1.step_pin:
+        Motor1.step_pin.close()
+    if hasattr(Motor1, 'enable_pin') and Motor1.enable_pin:
+        Motor1.enable_pin.close()
+    
+    if hasattr(Motor2, 'dir_pin') and Motor2.dir_pin:
+        Motor2.dir_pin.close()
+    if hasattr(Motor2, 'step_pin') and Motor2.step_pin:
+        Motor2.step_pin.close()
+    if hasattr(Motor2, 'enable_pin') and Motor2.enable_pin:
+        Motor2.enable_pin.close()
+    
+    if y_min:
+        y_min.close()
+    if x_min:
+        x_min.close()
+    
     print("Calibration exited cleanly")
 
 
