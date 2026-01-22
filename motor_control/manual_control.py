@@ -102,7 +102,7 @@ def initialize_motors():
     pump1 = Motor(forward=IN1, backward=IN2)
     # pump2 = Motor(forward=IN1, backward=IN2)
 
-    return Motor1, Motor2, pump1, pump2
+    return Motor1, Motor2, pump1
 
 def get_key_nonblocking():
     """
@@ -367,7 +367,7 @@ def on_y_min_released():
 def start_manual_control():
     global running
     global Motor1, Motor2
-    global pump1, pump2
+    global pump1
     global servo, y_min, x_min, DeviceFactory
 
     Device.pin_factory = RPiGPIOFactory()
@@ -382,7 +382,7 @@ def start_manual_control():
         print(f"Servo init failed: {e}")
         servo = None
 
-    Motor1, Motor2, pump1, pump2 = initialize_motors()
+    Motor1, Motor2, pump1 = initialize_motors()
 
     y_min.when_pressed = on_y_min_pressed
     y_min.when_released = on_y_min_released

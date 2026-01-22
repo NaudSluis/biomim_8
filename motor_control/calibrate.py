@@ -202,11 +202,10 @@ def start_calibration_control():
     x_min.when_released = manual_control.on_x_min_released
 
     # Initialize motors & GPIO
-    Motor1, Motor2, pump1, pump2 = initialize_motors()
+    Motor1, Motor2, pump1 = initialize_motors()
     manual_control.Motor1 = Motor1
     manual_control.Motor2 = Motor2
     manual_control.pump1 = pump1
-    manual_control.pump2 = pump2
     
     manual_control.running = True
 

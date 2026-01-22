@@ -49,11 +49,10 @@ def demo():
     Device.pin_factory = RPiGPIOFactory()
     
     # Initialize motors
-    Motor1, Motor2, pump1, pump2 = initialize_motors()
+    Motor1, Motor2, pump1 = initialize_motors()
     manual_control.Motor1 = Motor1
     manual_control.Motor2 = Motor2
     manual_control.pump1 = pump1
-    manual_control.pump2 = pump2
     
     # Initialize servo (like in manual mode)
     try:
