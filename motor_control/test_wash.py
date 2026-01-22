@@ -112,7 +112,7 @@ def demo():
         rotate_sponge()
         time.sleep(6)
         
-        move_to_position(-100, 0)  # Move back to spray
+        move_to_position(-1000, 0)  # Move back to spray
         time.sleep(5)
 
         print("Second wash cycle")

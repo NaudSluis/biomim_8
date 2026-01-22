@@ -99,8 +99,8 @@ def initialize_motors():
     Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
     Motor2.SetMicroStep("softward", "1/32step")
 
-    pump1 = Motor(forward=IN1, backward=IN2)
-    pump2 = Motor(forward=IN3, backward=IN4)
+    pump1 = Motor(forward=IN3, backward=IN4)
+    pump2 = Motor(forward=IN1, backward=IN2)
 
     return Motor1, Motor2, pump1, pump2
 
@@ -279,7 +279,7 @@ def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
 
     # Move X axis
     steps_x = abs(calibrated_x)
-    dir_x = "forward" if calibrated_x >= 0 else "backward"
+    dir_x = "backward" if calibrated_x >= 0 else "forward"
     for _ in range(steps_x):
         Motor2.TurnStep(Dir=dir_x, steps=20, stepdelay=step_delay)
         time.sleep(0.01)
