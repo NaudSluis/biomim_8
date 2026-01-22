@@ -1,4 +1,5 @@
 import json
+from motor_control import manual_control
 from motor_control.calibrate import move_to_home
 from motor_control.manual_control import initialize_motors, pump_one_forward, pump_two_forward, rotate_sponge, move_to_position
 from .DRV8825 import DRV8825
@@ -41,6 +42,7 @@ def demo():
     global Motor1, Motor2
 
     Motor1, Motor2, pump1, pump2 = initialize_motors()
+    manual_control.running = True
 
     start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -86,7 +88,10 @@ def demo():
     except Exception as e:
         print(f"Error during demo: {e}")
         return
-
+    finally:
+        manual_control.running = False
+        Motor1.disable()
+        Motor2.disable()
 
     end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
