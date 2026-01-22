@@ -42,10 +42,10 @@ def move_to_home():
     time.sleep(0.2)  # small settle delay
 
     # ---- X axis (move LEFT toward X-min) ----
-    manual_control.continuous_left = True
+    manual_control.continuous_right = True
     while not manual_control.x_min_pressed.is_set():
         time.sleep(0.01)
-    manual_control.continuous_left = False
+    manual_control.continuous_right = False
     print("X axis homed")
 
     # Reset counters
