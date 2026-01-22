@@ -21,8 +21,8 @@ def get_calibrated_postion(json_file: str):
     try:
         with open(json_file, "r") as fp:
             coords = json.load(fp)
-            calibrated_x = int(coords["end position x"])
-            calibrated_y = int(coords["end position y"])
+            calibrated_x = int(coords["end_position_x"])
+            calibrated_y = int(coords["end_position_y"])
 
     except FileNotFoundError:
         print(f"Error: {json_file} not found.")
@@ -118,31 +118,40 @@ def demo():
 
     except Exception as e:
         print(f"Error during demo: {e}")
-        return
     finally:
         manual_control.running = False
-        Motor1.Stop()
-        Motor2.Stop()
+        
+        # Safely stop motors if they were initialized
+        try:
+            if 'Motor1' in locals():
+                Motor1.Stop()
+            if 'Motor2' in locals():
+                Motor2.Stop()
+        except Exception as e:
+            print(f"Error stopping motors: {e}")
         
         # Clean up GPIO pins
-        if hasattr(Motor1, 'dir_pin') and Motor1.dir_pin:
-            Motor1.dir_pin.close()
-        if hasattr(Motor1, 'step_pin') and Motor1.step_pin:
-            Motor1.step_pin.close()
-        if hasattr(Motor1, 'enable_pin') and Motor1.enable_pin:
-            Motor1.enable_pin.close()
-        
-        if hasattr(Motor2, 'dir_pin') and Motor2.dir_pin:
-            Motor2.dir_pin.close()
-        if hasattr(Motor2, 'step_pin') and Motor2.step_pin:
-            Motor2.step_pin.close()
-        if hasattr(Motor2, 'enable_pin') and Motor2.enable_pin:
-            Motor2.enable_pin.close()
-        
-        if y_min:
-            y_min.close()
-        if x_min:
-            x_min.close()
+        try:
+            if 'Motor1' in locals() and hasattr(Motor1, 'dir_pin') and Motor1.dir_pin:
+                Motor1.dir_pin.close()
+            if 'Motor1' in locals() and hasattr(Motor1, 'step_pin') and Motor1.step_pin:
+                Motor1.step_pin.close()
+            if 'Motor1' in locals() and hasattr(Motor1, 'enable_pin') and Motor1.enable_pin:
+                Motor1.enable_pin.close()
+            
+            if 'Motor2' in locals() and hasattr(Motor2, 'dir_pin') and Motor2.dir_pin:
+                Motor2.dir_pin.close()
+            if 'Motor2' in locals() and hasattr(Motor2, 'step_pin') and Motor2.step_pin:
+                Motor2.step_pin.close()
+            if 'Motor2' in locals() and hasattr(Motor2, 'enable_pin') and Motor2.enable_pin:
+                Motor2.enable_pin.close()
+            
+            if y_min:
+                y_min.close()
+            if x_min:
+                x_min.close()
+        except Exception as e:
+            print(f"Error cleaning up GPIO: {e}")
 
     end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
