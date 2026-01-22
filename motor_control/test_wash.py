@@ -44,9 +44,17 @@ def demo():
     """
     global Motor1, Motor2
 
-    # Initialize GPIO and endstops
+    # Initialize GPIO factory FIRST, before any motor initialization
     Device.pin_factory = RPiGPIOFactory()
     
+    # Initialize motors
+    Motor1, Motor2, pump1, pump2 = initialize_motors()
+    manual_control.Motor1 = Motor1
+    manual_control.Motor2 = Motor2
+    manual_control.pump1 = pump1
+    manual_control.pump2 = pump2
+    
+    # Initialize endstops
     y_min = Button(manual_control.Y_MIN_PIN, pull_up=True)
     x_min = Button(manual_control.X_MIN_PIN, pull_up=True)
     
@@ -55,13 +63,6 @@ def demo():
     
     x_min.when_pressed = manual_control.on_x_min_pressed
     x_min.when_released = manual_control.on_x_min_released
-
-    # Initialize motors
-    Motor1, Motor2, pump1, pump2 = initialize_motors()
-    manual_control.Motor1 = Motor1
-    manual_control.Motor2 = Motor2
-    manual_control.pump1 = pump1
-    manual_control.pump2 = pump2
     
     manual_control.running = True
 
@@ -93,7 +94,7 @@ def demo():
         move_to_position(calibrated_x - 100, calibrated_y)  # Move to spray position
         time.sleep(10)
 
-        pump_one_forward(speed=0.8, duration=10)
+        pump_one_forward(duration=10)
         time.sleep(5)
 
         move_to_position(100, 0)
@@ -105,7 +106,7 @@ def demo():
         move_to_position(-100, 0)  # Move back to spray
         time.sleep(5)
 
-        pump_two_forward(speed=0.8, duration=10)
+        pump_two_forward(duration=10)
         time.sleep(10)
         
         move_to_home()
