@@ -116,7 +116,7 @@ def demo():
         time.sleep(5)
 
         print("Second wash cycle")
-        pump_two_forward(duration=10)
+        pump_one_forward(duration=10)
         time.sleep(5)
         print("Washing complete, returning home.")
         
