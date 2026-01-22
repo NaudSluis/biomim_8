@@ -54,6 +54,14 @@ def demo():
     manual_control.pump1 = pump1
     manual_control.pump2 = pump2
     
+    # Initialize servo (like in manual mode)
+    try:
+        manual_control.servo = manual_control.Servo(26)
+        manual_control.servo.detach()  # VERY IMPORTANT
+    except Exception as e:
+        print(f"Servo init failed: {e}")
+        manual_control.servo = None
+    
     # Initialize endstops
     y_min = Button(manual_control.Y_MIN_PIN, pull_up=True)
     x_min = Button(manual_control.X_MIN_PIN, pull_up=True)

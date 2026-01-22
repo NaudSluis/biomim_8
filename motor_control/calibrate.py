@@ -28,27 +28,28 @@ def get_key_nonblocking():
 
 # -------------------- Homing --------------------
 
-def move_to_home():
+def move_to_home(step_delay=0.0000001):
     """
-    Home both axes using the motor_control_loop.
+    Home both axes using motor TurnStep for consistent speed with move_to_position.
     Motion stops immediately on endstop trigger.
+    
+    :param step_delay: Step delay for motor movement, matches move_to_position speed
+    :type step_delay: float
     """
     print("Homing in progress...")
 
     # ---- Y axis (move DOWN toward Y-min) ----
-    manual_control.continuous_backward = True
     while not manual_control.y_min_pressed.is_set():
-        time.sleep(0.01)
-    manual_control.continuous_backward = False
+        manual_control.Motor1.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
+        time.sleep(0.005)  # Allow endstop to trigger
     print("Y axis homed")
 
     time.sleep(0.2)  # small settle delay
 
     # ---- X axis (move LEFT toward X-min) ----
-    manual_control.continuous_right = True
     while not manual_control.x_min_pressed.is_set():
-        time.sleep(0.01)
-    manual_control.continuous_right = False
+        manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
+        time.sleep(0.005)  # Allow endstop to trigger
     print("X axis homed")
 
     # Reset counters
