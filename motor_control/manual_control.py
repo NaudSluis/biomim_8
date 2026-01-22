@@ -279,7 +279,7 @@ def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
 
     # Move X axis
     steps_x = abs(calibrated_x)
-    dir_x = "backward" if calibrated_x >= 0 else "forward"
+    dir_x = "forward" if calibrated_x >= 0 else "backward"
     for _ in range(steps_x):
         Motor2.TurnStep(Dir=dir_x, steps=20, stepdelay=step_delay)
         time.sleep(0.01)
