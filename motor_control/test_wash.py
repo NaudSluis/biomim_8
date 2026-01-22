@@ -1,4 +1,5 @@
 import json
+import sys
 from motor_control import manual_control
 from motor_control.calibrate import move_to_home, reset_manual_state
 from motor_control.manual_control import initialize_motors, pump_one_forward, pump_two_forward, rotate_sponge, move_to_position
@@ -42,7 +43,7 @@ def demo():
     """
     Performs one washing cycle and logs to json
     """
-    global Motor1, Motor2
+    # global Motor1, Motor2
 
     # Initialize GPIO factory FIRST, before any motor initialization
     Device.pin_factory = RPiGPIOFactory()
@@ -99,13 +100,13 @@ def demo():
             return
         
 
-        move_to_position(calibrated_x - 100, calibrated_y)  # Move to spray position
+        move_to_position(calibrated_x - 1000, calibrated_y)  # Move to spray position
         time.sleep(10)
 
         pump_one_forward(duration=10)
         time.sleep(5)
 
-        move_to_position(100, 0)
+        move_to_position(1000, 0)
         time.sleep(2)
 
         rotate_sponge()
@@ -114,8 +115,10 @@ def demo():
         move_to_position(-100, 0)  # Move back to spray
         time.sleep(5)
 
+        print("Second wash cycle")
         pump_two_forward(duration=10)
-        time.sleep(10)
+        time.sleep(5)
+        print("Washing complete, returning home.")
         
         move_to_home()
         time.sleep(5)
@@ -172,3 +175,6 @@ def demo():
 
     except Exception as e:
         print(f"Error logging data: {e}")
+
+    # Exit the entire program
+    sys.exit(0)

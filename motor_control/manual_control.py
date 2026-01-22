@@ -182,9 +182,9 @@ def keyboard_listener():
             elif key == "r":
                 rotate_sponge()
             elif key == "e":
-                pump_one_forward(speed=0.8, duration=10)
+                pump_one_forward(speed=1, duration=10)
             elif key == "q":
-                pump_two_forward(speed=0.8, duration=10)
+                pump_two_forward(speed=1, duration=10)
             elif key == "z":
                 is_moving_left = True
             elif key == "x":
@@ -316,7 +316,7 @@ def back_off_y_endstop():
     global continuous_forward
 
     try:
-        end = time.monotonic() + 0.5
+        end = time.monotonic() + 0.7
         while time.monotonic() < end:
             continuous_forward = True
             time.sleep(0.01)
