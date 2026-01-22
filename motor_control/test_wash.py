@@ -82,7 +82,7 @@ def demo():
         move_to_home()
 
         calibrated_x, calibrated_y = get_calibrated_postion("motor_control/calibration_info.json")
-        calibrated_x_house, _ = get_calibrated_postion("motor_control/calibration_house.json")
+        # calibrated_x_house, _ = get_calibrated_postion("motor_control/calibration_house.json")
         
         print(calibrated_x, calibrated_y)
         if calibrated_x is None or calibrated_y is None:
