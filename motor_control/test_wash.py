@@ -124,19 +124,25 @@ def demo():
         Motor1.Stop()
         Motor2.Stop()
         
-        # Clean up GPIO
-        for p in Motor1.mode_pins + Motor2.mode_pins:
-            p.close()
+        # Clean up GPIO pins
+        if hasattr(Motor1, 'dir_pin') and Motor1.dir_pin:
+            Motor1.dir_pin.close()
+        if hasattr(Motor1, 'step_pin') and Motor1.step_pin:
+            Motor1.step_pin.close()
+        if hasattr(Motor1, 'enable_pin') and Motor1.enable_pin:
+            Motor1.enable_pin.close()
         
-        Motor1.dir_pin.close()
-        Motor1.step_pin.close()
-        Motor1.enable_pin.close()
-        Motor2.dir_pin.close()
-        Motor2.step_pin.close()
-        Motor2.enable_pin.close()
+        if hasattr(Motor2, 'dir_pin') and Motor2.dir_pin:
+            Motor2.dir_pin.close()
+        if hasattr(Motor2, 'step_pin') and Motor2.step_pin:
+            Motor2.step_pin.close()
+        if hasattr(Motor2, 'enable_pin') and Motor2.enable_pin:
+            Motor2.enable_pin.close()
         
-        y_min.close()
-        x_min.close()
+        if y_min:
+            y_min.close()
+        if x_min:
+            x_min.close()
 
     end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

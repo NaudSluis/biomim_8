@@ -209,16 +209,20 @@ def keyboard_listener():
 
 
 def step_motor_forward():
+    global Motor1
     Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 def step_motor_backward():
+    global Motor1
     Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 def step_motor_right():
+    global Motor2
     Motor2.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_left():
+    global Motor2
     Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 
@@ -229,6 +233,7 @@ def motor_control_loop():
     global is_moving_left, is_moving_right
     global continuous_left, continuous_right
     global y_axis, x_axis
+    global Motor1, Motor2
 
     while running:
         # -------- Y AXIS --------
