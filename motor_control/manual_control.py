@@ -30,10 +30,6 @@ running = True
 servo = None
 y_min = None
 x_min = None
-pump1 = None
-pump2 = None
-Motor1 = None
-Motor2 = None
 DeviceFactory = None
 
 # Ensures that variables work across threads
@@ -76,28 +72,18 @@ def pump_one_forward(speed=1.0, duration=10):
     Runs motor forward at given speed (0.0-1.0) for duration in seconds
     """
     global pump1
-    if pump1 is None:
-        print("Error: pump1 not initialized")
-        return
-    print(f"Starting pump1 forward at speed {speed} for {duration}s")
     pump1.forward(speed)
     time.sleep(duration)
     pump1.stop()
-    print("Pump1 stopped")
 
 def pump_two_forward(speed=1.0, duration=10):
     """
     Runs motor forward at given speed (0.0-1.0) for duration in seconds
     """
     global pump2
-    if pump2 is None:
-        print("Error: pump2 not initialized")
-        return
-    print(f"Starting pump2 forward at speed {speed} for {duration}s")
     pump2.forward(speed)
     time.sleep(duration)
     pump2.stop()
-    print("Pump2 stopped")
 
 
 # For pin layout, checkout the Waveshare stepper HAT wiki
@@ -279,7 +265,7 @@ def motor_control_loop():
         # Small sleep to prevent CPU hog
         time.sleep(0.005)
 
-def move_to_position(calibrated_x, calibrated_y, step_delay=0.005):
+def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
     """
     Moves device to the calibrated position.
     Steps are always positive; direction is determined by sign of coordinates.
@@ -417,18 +403,18 @@ def start_manual_control():
     if servo:
         servo.detach()
 
-    # Clean up GPIO pins
-    try:
-        Motor1.dir_pin.close()
-        Motor1.step_pin.close()
-        Motor1.enable_pin.close()
-        Motor2.dir_pin.close()
-        Motor2.step_pin.close()
-        Motor2.enable_pin.close()
-        y_min.close()
-        x_min.close()
-    except Exception as e:
-        print(f"Error closing GPIO pins: {e}")
+
+    for p in Motor1.mode_pins + Motor2.mode_pins:
+        p.close()
+
+    Motor1.dir_pin.close()
+    Motor1.step_pin.close()
+    Motor1.enable_pin.close()
+    Motor2.dir_pin.close()
+    Motor2.step_pin.close()
+    Motor2.enable_pin.close()
+
+    y_min.close()
 
     print("Program exited.")
 
