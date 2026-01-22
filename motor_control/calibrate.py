@@ -48,7 +48,7 @@ def move_to_home(step_delay=0.0000001):
 
     # ---- X axis (move LEFT toward X-min) ----
     while not manual_control.x_min_pressed.is_set():
-        manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
+        manual_control.Motor2.TurnStep(Dir="forward", steps=20, stepdelay=step_delay)
         time.sleep(0.005)  # Allow endstop to trigger
     print("X axis homed")
 
