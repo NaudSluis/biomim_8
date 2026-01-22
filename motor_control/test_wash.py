@@ -106,13 +106,13 @@ def demo():
         pump_one_forward(duration=10)
         time.sleep(5)
 
-        move_to_position(1000, 0)
+        move_to_position(-1000, 0)
         time.sleep(2)
 
         rotate_sponge()
         time.sleep(6)
         
-        move_to_position(-1000, 0)  # Move back to spray
+        move_to_position(1000, 0)  # Move back to spray
         time.sleep(5)
 
         print("Second wash cycle")
