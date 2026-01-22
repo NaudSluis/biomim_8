@@ -99,8 +99,8 @@ def initialize_motors():
     Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
     Motor2.SetMicroStep("softward", "1/32step")
 
-    pump1 = Motor(forward=IN1, backward=IN2)
-    pump2 = Motor(forward=IN3, backward=IN4)
+    pump1 = Motor(forward=IN3, backward=IN4)
+    pump2 = Motor(forward=IN1, backward=IN2)
 
     return Motor1, Motor2, pump1, pump2
 
