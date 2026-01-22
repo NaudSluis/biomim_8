@@ -7,7 +7,7 @@ import time
 import serial
 from datetime import datetime
 import threading
-from gpiozero import Button, Device
+from gpiozero import Button, Device, Servo
 from gpiozero.pins.rpigpio import RPiGPIOFactory
 
 
@@ -53,6 +53,15 @@ def demo():
     manual_control.Motor2 = Motor2
     manual_control.pump1 = pump1
     manual_control.pump2 = pump2
+    
+    # Initialize servo
+    try:
+        servo = Servo(26)
+        servo.detach()  # VERY IMPORTANT
+        manual_control.servo = servo
+    except Exception as e:
+        print(f"Servo init failed: {e}")
+        servo = None
     
     # Initialize endstops
     y_min = Button(manual_control.Y_MIN_PIN, pull_up=True)
@@ -100,12 +109,15 @@ def demo():
         move_to_position(100, 0)
         time.sleep(2)
 
+        print("Rotating sponge...")
         rotate_sponge()
         time.sleep(6)
-        
+        print("Sponge rotation complete.")
+
         move_to_position(-100, 0)  # Move back to spray
         time.sleep(5)
 
+        print("Activating pump2 for washing...")
         pump_two_forward(duration=10)
         time.sleep(10)
         
