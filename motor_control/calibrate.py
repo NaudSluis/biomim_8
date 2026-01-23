@@ -38,13 +38,15 @@ def move_to_home(step_delay=0.0000001):
     """
     print("Homing in progress...")
 
-    # ---- X axis (move LEFT toward X-min) ----
+    # ---- X axis (move RIGHT toward X-min, forward due to reversed gear) ----
     while not manual_control.x_min_pressed.is_set():
-        manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
+        manual_control.Motor2.TurnStep(Dir="forward", steps=20, stepdelay=step_delay)
         time.sleep(0.005)  # Allow endstop to trigger
     print("X axis homed")
 
-    # ---- Y axis (move DOWN toward Y-min) ----
+    time.sleep(0.2)  # small settle delay
+
+    # ---- Y axis (move UP toward Y-min, forward) ----
     while not manual_control.y_min_pressed.is_set():
         manual_control.Motor1.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
         time.sleep(0.005)  # Allow endstop to trigger
