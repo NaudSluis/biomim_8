@@ -99,23 +99,22 @@ def demo():
             return
         
 
-        move_to_position(calibrated_x - 3000, calibrated_y)  # Move to spray position
+        move_to_position(0, calibrated_y)  # Move to spray position
         time.sleep(10)
 
         pump_one_forward(duration=10)
         time.sleep(5)
 
-        move_to_position(3000, 0)
+        move_to_position(calibrated_x, 0)
         time.sleep(2)
 
         rotate_sponge()
         
-        move_to_position(-3000, 0)  # Move back to spray
+        move_to_position(-calibrated_x, 0)  # Move back to spray
         time.sleep(5)
 
         print("Second wash cycle")
         pump_one_forward(duration=10)
-        time.sleep(5)
         print("Washing complete, returning home.")
         
         move_to_home()
