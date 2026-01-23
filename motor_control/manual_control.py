@@ -269,18 +269,27 @@ def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
     """
     Moves device to the calibrated position.
     Steps are always positive; direction is determined by sign of coordinates.
+    Stops immediately if endstop is hit while moving backward.
     """
     global Motor1, Motor2
     # Move Y axis
     steps_y = abs(calibrated_y)
     dir_y = "forward" if calibrated_y >= 0 else "backward"
     for _ in range(steps_y):
+        # Stop if endstop hit while moving backward
+        if dir_y == "backward" and y_min_pressed.is_set():
+            print("Y endstop hit, stopping Y axis movement")
+            break
         Motor1.TurnStep(Dir=dir_y, steps=20, stepdelay=step_delay)
 
     # Move X axis
     steps_x = abs(calibrated_x)
     dir_x = "forward" if calibrated_x >= 0 else "backward"
     for _ in range(steps_x):
+        # Stop if endstop hit while moving backward
+        if dir_x == "backward" and x_min_pressed.is_set():
+            print("X endstop hit, stopping X axis movement")
+            break
         Motor2.TurnStep(Dir=dir_x, steps=20, stepdelay=step_delay)
         time.sleep(0.01)
 
