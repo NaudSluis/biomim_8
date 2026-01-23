@@ -303,20 +303,20 @@ def stop_all_motion():
 def back_off_x_endstop():
     global continuous_right
 
-    end = time.monotonic() + 1
-
-    while time.monotonic() < end:
-        continuous_right = True
-        time.sleep(0.01)  # allow motor loop to run
-
-    continuous_right = False
-    x_backoff_running.clear()
+    try:
+        end = time.monotonic() + 1
+        while time.monotonic() < end:
+            continuous_right = True
+            time.sleep(0.01)  # allow motor loop to run
+    finally:
+        continuous_right = False
+        x_backoff_running.clear()
 
 def back_off_y_endstop():
     global continuous_forward
 
     try:
-        end = time.monotonic() + 0.7
+        end = time.monotonic() + 1
         while time.monotonic() < end:
             continuous_forward = True
             time.sleep(0.01)
