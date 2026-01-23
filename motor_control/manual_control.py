@@ -330,6 +330,7 @@ def on_x_min_pressed():
     if x_backoff_running.is_set():
         return  # already backing off
 
+    x_min_pressed.set()
     stop_all_motion()
 
     x_backoff_running.set()
@@ -348,6 +349,7 @@ def on_y_min_pressed():
     if y_backoff_running.is_set():
         return  # already backing off
 
+    y_min_pressed.set()
     stop_all_motion()
 
     y_backoff_running.set()
