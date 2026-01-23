@@ -41,7 +41,7 @@ def move_to_home(step_delay=0.0000001):
     # ---- X axis (move backward toward X-min) ----
     while not manual_control.x_min_pressed.is_set():
         manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        time.sleep(0.005)  # Allow endstop to trigger
+        time.sleep(0.01)  # Match move_to_position speed for X axis
     print("X axis homed, waiting for backoff...")
     
     # Wait for backoff thread to start
@@ -57,7 +57,7 @@ def move_to_home(step_delay=0.0000001):
     # ---- Y axis (move backward toward Y-min) ----
     while not manual_control.y_min_pressed.is_set():
         manual_control.Motor1.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        time.sleep(0.005)  # Allow endstop to trigger
+        # No sleep for Y axis to match move_to_position speed
     print("Y axis homed, waiting for backoff...")
     
     # Wait for backoff thread to start
