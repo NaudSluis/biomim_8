@@ -1,16 +1,15 @@
 import json
-from motor_control.calibrate import move_to_home
-from motor_control.manual_control import initialize_connection, send_arduino_signal
+import sys
+from motor_control import manual_control
+from motor_control.calibrate import move_to_home, reset_manual_state
+from motor_control.manual_control import initialize_motors, pump_one_forward, pump_two_forward, rotate_sponge, move_to_position
 from .DRV8825 import DRV8825
 import time
 import serial
 from datetime import datetime
-
-Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
-Motor1.SetMicroStep("softward", "fullstep")
-
-Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
-Motor2.SetMicroStep("softward", "1/32step")
+import threading
+from gpiozero import Button, Device
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 
 
 def get_calibrated_postion(json_file: str):
@@ -23,8 +22,8 @@ def get_calibrated_postion(json_file: str):
     try:
         with open(json_file, "r") as fp:
             coords = json.load(fp)
-            calibrated_x = int(coords["end position x"])
-            calibrated_y = int(coords["end position y"])
+            calibrated_x = int(coords["end_position_x"])
+            calibrated_y = int(coords["end_position_y"])
 
     except FileNotFoundError:
         print(f"Error: {json_file} not found.")
@@ -40,95 +39,132 @@ def get_calibrated_postion(json_file: str):
 
     return calibrated_x, calibrated_y
 
-
-def move_to_position(calibrated_x, calibrated_y):
-    """
-    Moves device to the position in amount of steps. If else is used to determine whether the motor should
-    move forwards or backwards. That could be used for relative positions, for example if you would
-    want to move 10 back from the window to spray water
-
-    :param calibrated_x: amount of steps on the x-axis
-    :param calibrated_y: amount of steps on the y-axis
-    """
-    try:
-        if calibrated_x < 0 and calibrated_y > 0:
-            for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.005)
-
-            for _ in range(calibrated_x):
-                Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.005)
-                time.sleep(0.01)
-
-        elif calibrated_x > 0 and calibrated_y < 0:
-            for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.005)
-
-            for _ in range(calibrated_x):
-                Motor2.TurnStep(Dir="forward", steps=20, stepdelay=0.005)
-                time.sleep(0.01)
-
-        elif calibrated_x < 0 and calibrated_y < 0:
-            for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.005)
-
-            for _ in range(calibrated_x):
-                Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.005)
-                time.sleep(0.01)
-
-        else:
-            for _ in range(calibrated_y):
-                Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.005)
-
-            for _ in range(calibrated_x):
-                Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.005)
-                time.sleep(0.01)
-
-    except Exception as e:
-        print(f"Error moving to position: {e}")
-
-
 def demo():
     """
     Performs one washing cycle and logs to json
     """
+    # global Motor1, Motor2
+
+    # Initialize GPIO factory FIRST, before any motor initialization
+    Device.pin_factory = RPiGPIOFactory()
+    
+    # Initialize motors
+    Motor1, Motor2, pump1 = initialize_motors()
+    manual_control.Motor1 = Motor1
+    manual_control.Motor2 = Motor2
+    manual_control.pump1 = pump1
+    
+    # Initialize servo (like in manual mode)
+    try:
+        manual_control.servo = manual_control.Servo(26)
+        manual_control.servo.detach()  # VERY IMPORTANT
+    except Exception as e:
+        print(f"Servo init failed: {e}")
+        manual_control.servo = None
+    
+    # Initialize endstops
+    y_min = Button(manual_control.Y_MIN_PIN, pull_up=True)
+    x_min = Button(manual_control.X_MIN_PIN, pull_up=True)
+    
+    y_min.when_pressed = manual_control.on_y_min_pressed
+    y_min.when_released = manual_control.on_y_min_released
+    
+    x_min.when_pressed = manual_control.on_x_min_pressed
+    x_min.when_released = manual_control.on_x_min_released
+    
+    manual_control.running = True
+
+    # Start motor control loop thread
+    motor_thread = threading.Thread(
+        target=manual_control.motor_control_loop,
+        daemon=True
+    )
+    motor_thread.start()
+    
+    # Give thread time to start
+    time.sleep(0.1)
+
     start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
+
         move_to_home()
+
         calibrated_x, calibrated_y = get_calibrated_postion("motor_control/calibration_info.json")
-        ser = initialize_connection()
+        # calibrated_x_house, _ = get_calibrated_postion("motor_control/calibration_house.json")
+        
         print(calibrated_x, calibrated_y)
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
             return
+        
 
-        move_to_position(calibrated_x - 10, calibrated_y)  # Move to spray position
+        move_to_position(0, calibrated_y)  # Move to spray position
         time.sleep(10)
 
-        send_arduino_signal(ser, "pump_soap")  # Soapy pump in the future
+        pump_one_forward(duration=10)
         time.sleep(5)
 
-        move_to_position(10, 0)
-        time.sleep(0)
+        move_to_position(calibrated_x, 0)
+        time.sleep(2)
 
-        send_arduino_signal(ser, "rotate")
+        rotate_sponge()
+        
+        move_to_position(-calibrated_x, 0)  # Move back to spray
         time.sleep(5)
 
-        move_to_position(-10, 0)  # Move back to spray
-        time.sleep(0)
-
-        send_arduino_signal(ser, "pump_water")  # Water pump in the future
-        time.sleep(5)
-
+        print("Second wash cycle")
+        pump_one_forward(duration=10)
+        print("Washing complete, returning home.")
+        
         move_to_home()
+        time.sleep(5)
+
+        # move_to_position(calibrated_x_house, 0)  # Move to house position
+        
+
+        
 
     except Exception as e:
         print(f"Error during demo: {e}")
-        return
+    finally:
+        manual_control.running = False
+        
+        # Safely stop motors if they were initialized
+        try:
+            if 'Motor1' in locals():
+                Motor1.Stop()
+            if 'Motor2' in locals():
+                Motor2.Stop()
+        except Exception as e:
+            print(f"Error stopping motors: {e}")
+        
+        # Clean up GPIO pins
+        try:
+            if 'Motor1' in locals() and hasattr(Motor1, 'dir_pin') and Motor1.dir_pin:
+                Motor1.dir_pin.close()
+            if 'Motor1' in locals() and hasattr(Motor1, 'step_pin') and Motor1.step_pin:
+                Motor1.step_pin.close()
+            if 'Motor1' in locals() and hasattr(Motor1, 'enable_pin') and Motor1.enable_pin:
+                Motor1.enable_pin.close()
+            
+            if 'Motor2' in locals() and hasattr(Motor2, 'dir_pin') and Motor2.dir_pin:
+                Motor2.dir_pin.close()
+            if 'Motor2' in locals() and hasattr(Motor2, 'step_pin') and Motor2.step_pin:
+                Motor2.step_pin.close()
+            if 'Motor2' in locals() and hasattr(Motor2, 'enable_pin') and Motor2.enable_pin:
+                Motor2.enable_pin.close()
+            
+            if y_min:
+                y_min.close()
+            if x_min:
+                x_min.close()
+        except Exception as e:
+            print(f"Error cleaning up GPIO: {e}")
 
     end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    ser.close()
+    
 
     try:
         with open("logging.json", "a") as fp:
@@ -136,3 +172,6 @@ def demo():
 
     except Exception as e:
         print(f"Error logging data: {e}")
+
+    # Exit the entire program
+    sys.exit(0)
