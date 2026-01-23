@@ -330,7 +330,6 @@ def on_x_min_pressed():
     if x_backoff_running.is_set():
         return  # already backing off
 
-    x_min_pressed.set()
     stop_all_motion()
 
     x_backoff_running.set()
@@ -339,7 +338,7 @@ def on_x_min_pressed():
         daemon=True
     ).start()
     
-    print("x min endstop hit, all continuous movements stopped.")
+    print("x min endstop hit, backing off...")
 
 def on_x_min_released():
     x_min_pressed.clear()
@@ -349,7 +348,6 @@ def on_y_min_pressed():
     if y_backoff_running.is_set():
         return  # already backing off
 
-    y_min_pressed.set()
     stop_all_motion()
 
     y_backoff_running.set()
@@ -358,7 +356,7 @@ def on_y_min_pressed():
         daemon=True
     ).start()
 
-    print("y min endstop hit, all continuous movements stopped.")
+    print("y min endstop hit, backing off...")
 
 def on_y_min_released():
     y_min_pressed.clear()
