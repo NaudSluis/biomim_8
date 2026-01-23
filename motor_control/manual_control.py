@@ -301,15 +301,15 @@ def stop_all_motion():
     continuous_right = False
 
 def back_off_x_endstop():
-    global continuous_left
+    global continuous_right
 
     end = time.monotonic() + 1
 
     while time.monotonic() < end:
-        continuous_left = True
+        continuous_right = True
         time.sleep(0.01)  # allow motor loop to run
 
-    continuous_left = False
+    continuous_right = False
     x_backoff_running.clear()
 
 def back_off_y_endstop():
