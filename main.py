@@ -16,13 +16,10 @@ def main(answer: str):
     :type answer: str
     """
     try:
-        if answer not in ["a", "c", "t", "m"]:
+        if answer not in ["c", "t", "m"]:
             raise ValueError("Invalid input.")
 
-        if answer == "a":
-            upload_arduino_code()
-
-        elif answer == "c":
+        if answer == "c":
             start_calibration_control()
 
         elif answer == "t":
@@ -37,9 +34,9 @@ def main(answer: str):
 
 if __name__ == "__main__":
     while True:
-        answer = input("Upload Arduino (a), calibrate (c), test (t), manual (m)? ").strip().lower()
+        answer = input("calibrate (c), test (t), manual (m)? ").strip().lower()
 
-        if answer in ["a", "c", "t", "m"]:
+        if answer in ["c", "t", "m"]:
             main(answer)
         else:
             print("Unknown answer, try again.\n")

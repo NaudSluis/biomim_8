@@ -17,7 +17,8 @@ from gpiozero import Button, Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
 
 
-# -------------------- Keyboard --------------------
+# ===================== Keyboard =====================
+
 
 def get_key_nonblocking():
     dr, _, _ = select.select([sys.stdin], [], [], 0)
@@ -26,13 +27,14 @@ def get_key_nonblocking():
     return None
 
 
-# -------------------- Homing --------------------
+# ===================== Homing =====================
+
 
 def move_to_home(step_delay=0.0000001):
     """
     Home both axes using motor TurnStep for consistent speed with move_to_position.
     Motion stops immediately on endstop trigger.
-    
+
     :param step_delay: Step delay for motor movement, matches move_to_position speed
     :type step_delay: float
     """
@@ -41,32 +43,27 @@ def move_to_home(step_delay=0.0000001):
     # ---- X axis (move backward toward X-min) ----
     while not manual_control.x_min_pressed.is_set():
         manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        time.sleep(0.01)  # Match move_to_position speed for X axis
-    print("X axis homed, waiting for backoff...")
-    
+        time.sleep(0.01)
+
     # Wait for backoff thread to start
     time.sleep(0.05)
-    # Clear flag and wait for backoff to complete
+
     manual_control.x_min_pressed.clear()
     while manual_control.x_backoff_running.is_set():
-        time.sleep(0.01)
-    print("X axis backoff complete")
+        time.sleep(0.1)
 
     time.sleep(0.2)  # small settle delay
 
     # ---- Y axis (move backward toward Y-min) ----
     while not manual_control.y_min_pressed.is_set():
         manual_control.Motor1.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        # No sleep for Y axis to match move_to_position speed
-    print("Y axis homed, waiting for backoff...")
-    
+
     # Wait for backoff thread to start
     time.sleep(0.05)
-    # Clear flag and wait for backoff to complete
+
     manual_control.y_min_pressed.clear()
     while manual_control.y_backoff_running.is_set():
-        time.sleep(0.01)
-    print("Y axis backoff complete")
+        time.sleep(0.1)
 
     time.sleep(0.2)  # small settle delay
 
@@ -77,14 +74,14 @@ def move_to_home(step_delay=0.0000001):
     print("Homing complete")
 
 
-# -------------------- Reset State --------------------
+# ============== Reset State ==============
+
 
 def reset_manual_state():
     """
     Reset flags and perform homing.
     Must be called AFTER motor_control_loop is running.
     """
-    print("Resetting manual control state...")
 
     manual_control.is_moving_forward = False
     manual_control.is_moving_backward = False
@@ -98,16 +95,12 @@ def reset_manual_state():
 
     move_to_home()
 
-    print("Manual state reset complete")
 
+# ============== Save Calibration ==============
 
-# -------------------- Save Calibration --------------------
 
 def dump_to_json(x_axis, y_axis, filename="motor_control/calibration_info.json"):
-    coords = {
-        "end_position_x": x_axis,
-        "end_position_y": y_axis
-    }
+    coords = {"end_position_x": x_axis, "end_position_y": y_axis}
 
     try:
         with open(filename, "w") as fp:
@@ -117,7 +110,8 @@ def dump_to_json(x_axis, y_axis, filename="motor_control/calibration_info.json")
         print(f"Failed to save calibration: {e}")
 
 
-# -------------------- Calibration UI --------------------
+# ============== Calibration UI ==============
+
 
 def calibration_listener():
     fd = sys.stdin.fileno()
@@ -148,7 +142,9 @@ def calibration_listener():
 
             # Continuous motion
             if key == "w":
-                manual_control.continuous_forward = not manual_control.continuous_forward
+                manual_control.continuous_forward = (
+                    not manual_control.continuous_forward
+                )
                 manual_control.continuous_backward = False
                 manual_control.continuous_left = False
                 manual_control.continuous_right = False
@@ -160,7 +156,9 @@ def calibration_listener():
                 manual_control.continuous_backward = False
 
             elif key == "s":
-                manual_control.continuous_backward = not manual_control.continuous_backward
+                manual_control.continuous_backward = (
+                    not manual_control.continuous_backward
+                )
                 manual_control.continuous_forward = False
                 manual_control.continuous_left = False
                 manual_control.continuous_right = False
@@ -201,7 +199,8 @@ def calibration_listener():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
-# -------------------- Entry Point --------------------
+# ============== Entry Point ==============
+
 
 def start_calibration_control():
     print("Starting calibration in 2 seconds...")
@@ -209,13 +208,13 @@ def start_calibration_control():
 
     # Initialize GPIO and endstops
     Device.pin_factory = RPiGPIOFactory()
-    
+
     y_min = Button(manual_control.Y_MIN_PIN, pull_up=True)
     x_min = Button(manual_control.X_MIN_PIN, pull_up=True)
-    
+
     y_min.when_pressed = manual_control.on_y_min_pressed
     y_min.when_released = manual_control.on_y_min_released
-    
+
     x_min.when_pressed = manual_control.on_x_min_pressed
     x_min.when_released = manual_control.on_x_min_released
 
@@ -224,15 +223,14 @@ def start_calibration_control():
     manual_control.Motor1 = Motor1
     manual_control.Motor2 = Motor2
     manual_control.pump1 = pump1
-    
+
     manual_control.running = True
 
     motor_thread = threading.Thread(
-        target=manual_control.motor_control_loop,
-        daemon=True
+        target=manual_control.motor_control_loop, daemon=True
     )
     motor_thread.start()
-    
+
     # Give thread time to start
     time.sleep(0.1)
 
@@ -246,27 +244,27 @@ def start_calibration_control():
     manual_control.running = False
     Motor1.Stop()
     Motor2.Stop()
-    
+
     # Clean up GPIO pins
-    if hasattr(Motor1, 'dir_pin') and Motor1.dir_pin:
+    if hasattr(Motor1, "dir_pin") and Motor1.dir_pin:
         Motor1.dir_pin.close()
-    if hasattr(Motor1, 'step_pin') and Motor1.step_pin:
+    if hasattr(Motor1, "step_pin") and Motor1.step_pin:
         Motor1.step_pin.close()
-    if hasattr(Motor1, 'enable_pin') and Motor1.enable_pin:
+    if hasattr(Motor1, "enable_pin") and Motor1.enable_pin:
         Motor1.enable_pin.close()
-    
-    if hasattr(Motor2, 'dir_pin') and Motor2.dir_pin:
+
+    if hasattr(Motor2, "dir_pin") and Motor2.dir_pin:
         Motor2.dir_pin.close()
-    if hasattr(Motor2, 'step_pin') and Motor2.step_pin:
+    if hasattr(Motor2, "step_pin") and Motor2.step_pin:
         Motor2.step_pin.close()
-    if hasattr(Motor2, 'enable_pin') and Motor2.enable_pin:
+    if hasattr(Motor2, "enable_pin") and Motor2.enable_pin:
         Motor2.enable_pin.close()
-    
+
     if y_min:
         y_min.close()
     if x_min:
         x_min.close()
-    
+
     print("Calibration exited cleanly")
 
 
