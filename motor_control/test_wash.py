@@ -173,8 +173,17 @@ def demo():
     end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-        with open("logging.json", "a") as fp:
-            json.dump({"start_time": start, "end_time": end}, fp)
+        # Read existing data, append new entry, and write back
+        try:
+            with open("logging.json", "r") as fp:
+                logs = json.load(fp)
+        except (FileNotFoundError, json.JSONDecodeError):
+            logs = []
+        
+        logs.append({"start_time": start, "end_time": end})
+        
+        with open("logging.json", "w") as fp:
+            json.dump(logs, fp, indent=2)
 
     except Exception as e:
         print(f"Error logging data: {e}")
