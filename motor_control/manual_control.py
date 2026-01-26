@@ -1,5 +1,5 @@
 """
-This file is the base for the control of the robot.
+This file is the base for the control of the robot. It allows for manual control of the motors via keyboard input.
 """
 import sys
 import termios
@@ -12,6 +12,8 @@ from gpiozero import Button
 from gpiozero import Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
 from gpiozero import Motor, Servo
+
+# =================== Global Variables ===================
 
 is_moving_forward = False  # single step
 is_moving_backward = False  # single step
@@ -27,6 +29,10 @@ y_axis = 0  # Used for calibration counter
 x_axis = 0  # Used for calibration counter
 running = True
 
+# Motor instances
+Motor1 = None
+Motor2 = None
+pump1 = None
 servo = None
 y_min = None
 x_min = None
@@ -35,74 +41,35 @@ DeviceFactory = None
 # Ensures that variables work across threads
 y_min_pressed = threading.Event()
 x_min_pressed = threading.Event()
-y_backoff_running = threading.Event() 
+y_backoff_running = threading.Event()
 x_backoff_running = threading.Event()
 
-# Choose GPIOs for endstops
+# GPIOs for endstops
 Y_MIN_PIN = 6
 X_MIN_PIN = 5
 
-# Pins for pump one
-# ENA = 8  # PWM pin (speed)
+#  ----- GPIO Pins for motors and pumps -----
+
+# Motor 1 (Y Axis)
+DIR1 = 13  # Direction pin
+STEP1 = 19  # Step pin
+ENABLE1 = 12  # Enable pin
+MODE1 = (16, 17, 20)  # Microstep pins
+
+# Motor 2 (X Axis)
+DIR2 = 24  # Direction pin
+STEP2 = 18  # Step pin
+ENABLE2 = 4  # Enable pin
+MODE2 = (21, 22, 27)  # Microstep pins
+
+
+# Pins for pump one, no ENA is used as highest speed sprays most effective
 IN1 = 9  # Direction pin 1
 IN2 = 10  # Direction pin 2
 
-# Pins for pump two
-IN3 = 11  # Direction pin 1
-IN4 = 23   # Direction pin 2
-# ENB = 25  # PWM pin (speed)
 
+# =================== Functions for keyboard input ==================
 
-def rotate_sponge():
-    global servo
-    if servo is None:
-        print("Servo not initialized")
-        return
-
-    print("Rotating sponge...")
-    servo.min()
-    time.sleep(2.5)
-    servo.max()
-    time.sleep(2.5)
-    servo.mid()
-    servo.detach()
-
-def pump_one_forward(speed=1.0, duration=10):
-    """
-    Runs motor forward at given speed (0.0-1.0) for duration in seconds
-    """
-    global pump1
-    pump1.forward(speed)
-    time.sleep(duration)
-    pump1.stop()
-
-def pump_two_forward(speed=1.0, duration=10):
-    """
-    Runs motor forward at given speed (0.0-1.0) for duration in seconds
-    """
-    global pump2
-    pump2.forward(speed)
-    time.sleep(duration)
-    pump2.stop()
-
-
-# For pin layout, checkout the Waveshare stepper HAT wiki
-def initialize_motors():
-    """
-    Initializes motors with pin layout
-    """
-    global IN1, IN2, IN3, IN4
-
-    Motor1 = DRV8825(dir_pin=13, step_pin=19, enable_pin=12, mode_pins=(16, 17, 20))
-    Motor1.SetMicroStep("softward", "1/32step")
-
-    Motor2 = DRV8825(dir_pin=24, step_pin=18, enable_pin=4, mode_pins=(21, 22, 27))
-    Motor2.SetMicroStep("softward", "1/32step")
-
-    pump1 = Motor(forward=IN1, backward=IN2)
-    # pump2 = Motor(forward=IN1, backward=IN2)
-
-    return Motor1, Motor2, pump1
 
 def get_key_nonblocking():
     """
@@ -118,7 +85,7 @@ def get_key_nonblocking():
 
 def keyboard_listener():
     """
-    Terminal-based listener for calibration.
+    Terminal-based listener for keyboard control.
     """
     global is_moving_forward, is_moving_backward
     global continuous_forward, continuous_backward, running
@@ -155,36 +122,33 @@ def keyboard_listener():
 
             if key == "w":
                 continuous_forward = not continuous_forward
-                print(continuous_forward)
                 if continuous_forward:
-                    continuous_backward = False  # stop opposite mode
+                    continuous_backward = False  # stop opposite modes
                     continuous_left = False
                     continuous_right = False
 
             elif key == "a":
                 continuous_left = not continuous_left
                 if continuous_left:
-                    continuous_right = False  # stop opposite mode
+                    continuous_right = False  # stop opposite modes
                     continuous_backward = False
                     continuous_forward = False
             elif key == "s":
                 continuous_backward = not continuous_backward
                 if continuous_backward:
-                    continuous_forward = False  # stop opposite mode
+                    continuous_forward = False  # stop opposite modes
                     continuous_left = False
                     continuous_right = False
             elif key == "d":
                 continuous_right = not continuous_right
                 if continuous_right:
-                    continuous_left = False  # stop opposite mode
+                    continuous_left = False  # stop opposite modes
                     continuous_backward = False
                     continuous_forward = False
             elif key == "r":
                 rotate_sponge()
             elif key == "e":
                 pump_one_forward(speed=1, duration=10)
-            elif key == "q":
-                pump_two_forward(speed=1, duration=10)
             elif key == "z":
                 is_moving_left = True
             elif key == "x":
@@ -194,7 +158,7 @@ def keyboard_listener():
             elif key == "h":
                 is_moving_backward = True
 
-            elif key == " ":
+            elif key == " ":  # SPACE
                 continuous_forward = False
                 continuous_backward = False
                 is_moving_forward = False
@@ -208,13 +172,18 @@ def keyboard_listener():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
+# =================== Motor Control Functions ===================
+
+
 def step_motor_forward():
     global Motor1
     Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
+
 def step_motor_backward():
     global Motor1
     Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
+
 
 def step_motor_right():
     global Motor2
@@ -224,6 +193,47 @@ def step_motor_right():
 def step_motor_left():
     global Motor2
     Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
+
+
+def rotate_sponge():
+    global servo
+    if servo is None:
+        print("Servo not initialized")
+        return
+
+    servo.min()
+    time.sleep(2.5)  # wait for servo to move
+    servo.max()
+    time.sleep(2.5)  # wait for servo to move
+    servo.mid()  # stop signal
+    servo.detach()
+
+
+def pump_one_forward(duration=10):
+    """
+    Runs motor forward for duration seconds
+    """
+    global pump1
+    pump1.forward()
+    time.sleep(duration)
+    pump1.stop()
+
+
+def initialize_motors():
+    """
+    Initializes motors with pin layout
+    """
+    global IN1, IN2, DIR1, STEP1, ENABLE1, MODE1, DIR2, STEP2, ENABLE2, MODE2
+
+    Motor1 = DRV8825(dir_pin=DIR1, step_pin=STEP1, enable_pin=ENABLE1, mode_pins=MODE1)
+    Motor1.SetMicroStep("softward", "1/32step")
+
+    Motor2 = DRV8825(dir_pin=DIR2, step_pin=STEP2, enable_pin=ENABLE2, mode_pins=MODE2)
+    Motor2.SetMicroStep("softward", "1/32step")
+
+    pump1 = Motor(forward=IN1, backward=IN2)
+
+    return Motor1, Motor2, pump1
 
 
 def motor_control_loop():
@@ -243,8 +253,7 @@ def motor_control_loop():
             is_moving_forward = False  # single step consumed
 
         if is_moving_backward or continuous_backward:
-            # Optional: block by Y min if you want
-            if not y_min_pressed.is_set():  # or remove check to always allow backward
+            if not y_min_pressed.is_set():
                 step_motor_backward()
                 y_axis -= 1
             is_moving_backward = False
@@ -256,14 +265,14 @@ def motor_control_loop():
             is_moving_left = False  # single step consumed
 
         if is_moving_right or continuous_right:
-            # Optional: block by X min if needed
-            if not x_min_pressed.is_set():  # or remove check to always allow right
+            if not x_min_pressed.is_set():
                 step_motor_right()
                 x_axis += 1
             is_moving_right = False
 
         # Small sleep to prevent CPU hog
         time.sleep(0.005)
+
 
 def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
     """
@@ -272,13 +281,13 @@ def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
     Stops immediately if endstop is hit while moving backward.
     """
     global Motor1, Motor2
+
     # Move Y axis
     steps_y = abs(calibrated_y)
     dir_y = "forward" if calibrated_y >= 0 else "backward"
     for _ in range(steps_y):
         # Stop if endstop hit while moving backward
         if dir_y == "backward" and y_min_pressed.is_set():
-            print("Y endstop hit, stopping Y axis movement")
             break
         Motor1.TurnStep(Dir=dir_y, steps=20, stepdelay=step_delay)
 
@@ -288,12 +297,17 @@ def move_to_position(calibrated_x, calibrated_y, step_delay=0.0000001):
     for _ in range(steps_x):
         # Stop if endstop hit while moving backward
         if dir_x == "backward" and x_min_pressed.is_set():
-            print("X endstop hit, stopping X axis movement")
             break
         Motor2.TurnStep(Dir=dir_x, steps=20, stepdelay=step_delay)
-        time.sleep(0.01)
+
+
+# ================== Endstop Handling Functions ===================
+
 
 def stop_all_motion():
+    """
+    Stops all motor motion by resetting all movement flags.
+    """
     global is_moving_forward, is_moving_backward
     global is_moving_left, is_moving_right
     global continuous_forward, continuous_backward
@@ -309,7 +323,11 @@ def stop_all_motion():
     continuous_left = False
     continuous_right = False
 
+
 def back_off_x_endstop():
+
+    """Backs off from the X endstop."""
+
     global continuous_right
 
     try:
@@ -321,7 +339,9 @@ def back_off_x_endstop():
         continuous_right = False
         x_backoff_running.clear()
 
+
 def back_off_y_endstop():
+    """Backs off from the Y endstop."""
     global continuous_forward
 
     try:
@@ -334,8 +354,10 @@ def back_off_y_endstop():
         y_backoff_running.clear()
 
 
-
 def on_x_min_pressed():
+
+    """Handles X min endstop press event."""
+
     if x_backoff_running.is_set():
         return  # already backing off
 
@@ -343,18 +365,18 @@ def on_x_min_pressed():
     stop_all_motion()
 
     x_backoff_running.set()
-    threading.Thread(
-        target=back_off_x_endstop,
-        daemon=True
-    ).start()
-    
+    threading.Thread(target=back_off_x_endstop, daemon=True).start()
+
     print("x min endstop hit, backing off...")
 
+
 def on_x_min_released():
+    """Handles X min endstop release event."""
     x_min_pressed.clear()
-    print("x min endstop released.")
+
 
 def on_y_min_pressed():
+    """Handles Y min endstop press event."""
     if y_backoff_running.is_set():
         return  # already backing off
 
@@ -362,23 +384,25 @@ def on_y_min_pressed():
     stop_all_motion()
 
     y_backoff_running.set()
-    threading.Thread(
-        target=back_off_y_endstop,
-        daemon=True
-    ).start()
+    threading.Thread(target=back_off_y_endstop, daemon=True).start()
 
-    print("y min endstop hit, backing off...")
 
 def on_y_min_released():
+    """Handles Y min endstop release event."""
     y_min_pressed.clear()
-    print("y min endstop released.")
+
+
+# =================== Main Function ===================
+
 
 def start_manual_control():
+    """Starts the manual control program. First initializes motors and then starts keyboard listener, after which it cleans up."""
     global running
     global Motor1, Motor2
     global pump1
     global servo, y_min, x_min, DeviceFactory
 
+    # Pin factory for gpiozero, as there were poblems when not set. It looked like there were multiple conflicting pin factories.
     Device.pin_factory = RPiGPIOFactory()
 
     y_min = Button(Y_MIN_PIN, pull_up=True)
@@ -386,7 +410,7 @@ def start_manual_control():
 
     try:
         servo = Servo(26)
-        servo.detach()   # VERY IMPORTANT
+        servo.detach()  # VERY IMPORTANT
     except Exception as e:
         print(f"Servo init failed: {e}")
         servo = None
@@ -411,7 +435,6 @@ def start_manual_control():
     Motor2.Stop()
     if servo:
         servo.detach()
-
 
     for p in Motor1.mode_pins + Motor2.mode_pins:
         p.close()
