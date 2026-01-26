@@ -328,7 +328,7 @@ def back_off_x_endstop():
 
     """Backs off from the X endstop."""
 
-    global continuous_right
+    global continuous_right, x_min_pressed
 
     try:
         end = time.monotonic() + 1
@@ -337,12 +337,13 @@ def back_off_x_endstop():
             time.sleep(0.01)  # allow motor loop to run
     finally:
         continuous_right = False
+        x_min_pressed.clear()  # Clear the flag after backing off
         x_backoff_running.clear()
 
 
 def back_off_y_endstop():
     """Backs off from the Y endstop."""
-    global continuous_forward
+    global continuous_forward, y_min_pressed
 
     try:
         end = time.monotonic() + 1
@@ -351,6 +352,7 @@ def back_off_y_endstop():
             time.sleep(0.01)
     finally:
         continuous_forward = False
+        y_min_pressed.clear()  # Clear the flag after backing off
         y_backoff_running.clear()
 
 
