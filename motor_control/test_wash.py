@@ -5,7 +5,6 @@ from motor_control.calibrate import move_to_home, reset_manual_state
 from motor_control.manual_control import (
     initialize_motors,
     pump_one_forward,
-    pump_two_forward,
     rotate_sponge,
     move_to_position,
 )
