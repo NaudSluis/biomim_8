@@ -16,7 +16,7 @@ def run_script():
     is_running = True
     print("Starting wash...", flush=True)
     try:
-        subprocess.run(["python3", "/home/group8/biomim_8/motor_control/test_wash.py"])
+        subprocess.run(["python3", "/home/group8/biomim_8/motor_control/test_wash.py"], cwd="/home/group8/biomim_8")
     except Exception as e:
         print(f"Error running script: {e}", flush=True)
     finally:
