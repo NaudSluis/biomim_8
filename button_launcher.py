@@ -15,7 +15,7 @@ logging.info("Button launcher started")
 
 # Configure button on GPIO25 (wired to GND)
 try:
-    button = Button(25, pull_up=True, bounce_time=0.01, active_high=False)
+    button = Button(25, pull_up=True, bounce_time=0.01, active_state=0)
     logging.info("Button initialized on GPIO25")
 except Exception as e:
     logging.error(f"Failed to initialize button: {e}")
