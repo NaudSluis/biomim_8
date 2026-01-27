@@ -1,10 +1,10 @@
 from gpiozero import Button
-import subprocess
+from motor_control.test_wash import demo
 from signal import pause
 import sys
 
 # Configure button on GPIO25
-button = Button(25, pull_up=True, bounce_time=0.01)
+button = Button(25, pull_up=False, bounce_time=0.01)
 is_running = False  # This acts as our "lock"
 
 def run_script():
@@ -16,7 +16,7 @@ def run_script():
     is_running = True
     print("Starting wash...", flush=True)
     try:
-        subprocess.run(["python3", "/home/group8/biomim_8/motor_control/test_wash.py"], cwd="/home/group8/biomim_8")
+        demo()
     except Exception as e:
         print(f"Error running script: {e}", flush=True)
     finally:
