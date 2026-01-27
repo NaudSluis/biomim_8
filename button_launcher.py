@@ -2,7 +2,7 @@ from gpiozero import Button
 import subprocess
 from signal import pause
 
-button = Button(26)
+button = Button(25)
 is_running = False  # This acts as our "lock"
 
 def run_script():
