@@ -247,10 +247,12 @@ def motor_control_loop():
 
     while running:
         # -------- Y AXIS --------
-        if is_moving_forward or continuous_forward:
-            # Don't move forward if we might hit something (add upper limit check if available)
-            step_motor_forward()
-            y_axis += 1
+        if is_moving_forward or continuous_forward or y_backoff_running.is_set():
+            # Allow forward movement for backoff even if Y endstop is pressed
+            if not y_min_pressed.is_set() or y_backoff_running.is_set():
+                step_motor_forward()
+                y_axis += 1
+            # else: (no else needed, as forward is always safe)
             is_moving_forward = False  # single step consumed
 
         if is_moving_backward or continuous_backward:
