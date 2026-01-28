@@ -248,26 +248,36 @@ def motor_control_loop():
     while running:
         # -------- Y AXIS --------
         if is_moving_forward or continuous_forward:
+            # Don't move forward if we might hit something (add upper limit check if available)
             step_motor_forward()
             y_axis += 1
             is_moving_forward = False  # single step consumed
 
         if is_moving_backward or continuous_backward:
+            # Don't move backward if Y endstop is pressed
             if not y_min_pressed.is_set():
                 step_motor_backward()
                 y_axis -= 1
+            else:
+                # Stop continuous motion if endstop hit
+                continuous_backward = False
             is_moving_backward = False
 
         # -------- X AXIS --------
         if is_moving_left or continuous_left:
+            # Don't move left if we might hit something (add upper limit check if available)
             step_motor_left()
             x_axis -= 1
             is_moving_left = False  # single step consumed
 
         if is_moving_right or continuous_right:
+            # Don't move right if X endstop is pressed
             if not x_min_pressed.is_set():
                 step_motor_right()
                 x_axis += 1
+            else:
+                # Stop continuous motion if endstop hit
+                continuous_right = False
             is_moving_right = False
 
         # Small sleep to prevent CPU hog
