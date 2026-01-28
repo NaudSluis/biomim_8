@@ -359,11 +359,14 @@ def back_off_y_endstop():
 def on_x_min_pressed():
 
     """Handles X min endstop press event."""
+    print("DEBUG: X endstop pressed!")
 
     if x_backoff_running.is_set():
+        print("DEBUG: X backoff already running, ignoring")
         return  # already backing off
 
     x_min_pressed.set()
+    print("DEBUG: X min_pressed set")
     stop_all_motion()
 
     x_backoff_running.set()
@@ -374,15 +377,19 @@ def on_x_min_pressed():
 
 def on_x_min_released():
     """Handles X min endstop release event."""
+    print("DEBUG: X endstop released")
     x_min_pressed.clear()
 
 
 def on_y_min_pressed():
     """Handles Y min endstop press event."""
+    print("DEBUG: Y endstop pressed!")
     if y_backoff_running.is_set():
+        print("DEBUG: Y backoff already running, ignoring")
         return  # already backing off
 
     y_min_pressed.set()
+    print("DEBUG: Y min_pressed set")
     stop_all_motion()
 
     y_backoff_running.set()
@@ -391,6 +398,7 @@ def on_y_min_pressed():
 
 def on_y_min_released():
     """Handles Y min endstop release event."""
+    print("DEBUG: Y endstop released")
     y_min_pressed.clear()
 
 

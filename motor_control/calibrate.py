@@ -41,10 +41,12 @@ def move_to_home(step_delay=0.0000001):
     print("Homing in progress...")
 
     # ---- X axis (move backward toward X-min) ----
+    print("  X axis: moving backward toward endstop...")
     while not manual_control.x_min_pressed.is_set():
         manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
         time.sleep(0.01)
 
+    print("  X axis: endstop hit, waiting for backoff...")
     # Wait for backoff thread to start
     time.sleep(0.05)
 
@@ -53,11 +55,15 @@ def move_to_home(step_delay=0.0000001):
         time.sleep(0.1)
 
     time.sleep(0.2)  # small settle delay
+    print("  X axis: homing complete")
 
     # ---- Y axis (move backward toward Y-min) ----
+    print("  Y axis: moving backward toward endstop...")
     while not manual_control.y_min_pressed.is_set():
         manual_control.Motor1.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
+        time.sleep(0.01)
 
+    print("  Y axis: endstop hit, waiting for backoff...")
     # Wait for backoff thread to start
     time.sleep(0.05)
 
@@ -66,6 +72,7 @@ def move_to_home(step_delay=0.0000001):
         time.sleep(0.1)
 
     time.sleep(0.2)  # small settle delay
+    print("  Y axis: homing complete")
 
     # Reset counters
     manual_control.x_axis = 0
