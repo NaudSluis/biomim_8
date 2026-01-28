@@ -335,81 +335,87 @@ def stop_all_motion():
 
 
 def back_off_x_endstop():
-
-    """Backs off from the X endstop."""
-
-    global continuous_right, x_min_pressed
-
+    """Backs off from the X endstop by moving right (away) for 0.5 seconds."""
+    global continuous_right
     try:
-        end = time.monotonic() + 1
+        print("DEBUG: X backoff started")
+        end = time.monotonic() + 0.5
         while time.monotonic() < end:
             continuous_right = True
-            time.sleep(0.01)  # allow motor loop to run
+            time.sleep(0.01)
     finally:
         continuous_right = False
-        x_min_pressed.clear()  # Clear the flag after backing off
-        x_backoff_running.clear()
+        print("DEBUG: X backoff complete")
+    # Clear flags after backoff completes
+    time.sleep(0.1)  # Give it a moment to settle
+    x_min_pressed.clear()
+    x_backoff_running.clear()
+    print("DEBUG: X flags cleared")
 
 
 def back_off_y_endstop():
-    """Backs off from the Y endstop."""
-    global continuous_forward, y_min_pressed
-
+    """Backs off from the Y endstop by moving forward (away) for 0.5 seconds."""
+    global continuous_forward
     try:
-        end = time.monotonic() + 1
+        print("DEBUG: Y backoff started")
+        end = time.monotonic() + 0.5
         while time.monotonic() < end:
             continuous_forward = True
             time.sleep(0.01)
     finally:
         continuous_forward = False
-        y_min_pressed.clear()  # Clear the flag after backing off
-        y_backoff_running.clear()
+        print("DEBUG: Y backoff complete")
+    # Clear flags after backoff completes
+    time.sleep(0.1)  # Give it a moment to settle
+    y_min_pressed.clear()
+    y_backoff_running.clear()
+    print("DEBUG: Y flags cleared")
 
 
 def on_x_min_pressed():
-
     """Handles X min endstop press event."""
     print("DEBUG: X endstop pressed!")
-
+    
     if x_backoff_running.is_set():
         print("DEBUG: X backoff already running, ignoring")
-        return  # already backing off
+        return
 
     x_min_pressed.set()
-    print("DEBUG: X min_pressed set")
+    print("DEBUG: X min_pressed set, stopping all motion")
     stop_all_motion()
 
     x_backoff_running.set()
+    print("DEBUG: Starting X backoff thread")
     threading.Thread(target=back_off_x_endstop, daemon=True).start()
-
-    print("x min endstop hit, backing off...")
 
 
 def on_x_min_released():
     """Handles X min endstop release event."""
     print("DEBUG: X endstop released")
-    x_min_pressed.clear()
+    # Clear flags only after backoff completes (handled in back_off function)
 
 
 def on_y_min_pressed():
     """Handles Y min endstop press event."""
     print("DEBUG: Y endstop pressed!")
+    
     if y_backoff_running.is_set():
         print("DEBUG: Y backoff already running, ignoring")
-        return  # already backing off
+        return
 
     y_min_pressed.set()
-    print("DEBUG: Y min_pressed set")
+    print("DEBUG: Y min_pressed set, stopping all motion")
     stop_all_motion()
 
     y_backoff_running.set()
+    print("DEBUG: Starting Y backoff thread")
     threading.Thread(target=back_off_y_endstop, daemon=True).start()
 
 
 def on_y_min_released():
     """Handles Y min endstop release event."""
     print("DEBUG: Y endstop released")
-    y_min_pressed.clear()
+    # Clear flags only after backoff completes (handled in back_off function)
 
 
 # =================== Main Function ===================
