@@ -401,6 +401,10 @@ def on_x_min_released():
 def on_y_min_pressed():
     """Handles Y min endstop press event."""
     print("DEBUG: Y endstop pressed!")
+    try:
+        print(f"DEBUG: Y_MIN_PIN value (should be 0 if pressed): {y_min.value}")
+    except Exception as e:
+        print(f"DEBUG: Could not read y_min.value: {e}")
     
     if y_backoff_running.is_set():
         print("DEBUG: Y backoff already running, ignoring")
@@ -418,6 +422,10 @@ def on_y_min_pressed():
 def on_y_min_released():
     """Handles Y min endstop release event."""
     print("DEBUG: Y endstop released")
+    try:
+        print(f"DEBUG: Y_MIN_PIN value (should be 1 if released): {y_min.value}")
+    except Exception as e:
+        print(f"DEBUG: Could not read y_min.value: {e}")
     # Clear flags only after backoff completes (handled in back_off function)
 
 
