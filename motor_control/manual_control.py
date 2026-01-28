@@ -339,7 +339,7 @@ def back_off_x_endstop():
     global continuous_right
     try:
         print("DEBUG: X backoff started")
-        end = time.monotonic() + 0.5
+        end = time.monotonic() + 1
         while time.monotonic() < end:
             continuous_right = True
             time.sleep(0.01)
