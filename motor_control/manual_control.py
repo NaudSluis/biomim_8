@@ -270,9 +270,9 @@ def motor_control_loop():
             x_axis -= 1
             is_moving_left = False  # single step consumed
 
-        if is_moving_right or continuous_right:
-            # Don't move right if X endstop is pressed
-            if not x_min_pressed.is_set():
+        if is_moving_right or continuous_right or x_backoff_running.is_set():
+            # Allow right movement for backoff even if X endstop is pressed
+            if not x_min_pressed.is_set() or x_backoff_running.is_set():
                 step_motor_right()
                 x_axis += 1
             else:
