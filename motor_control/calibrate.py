@@ -216,7 +216,7 @@ def start_calibration_control():
     # Initialize GPIO and endstops
     Device.pin_factory = RPiGPIOFactory()
 
-    y_min = Button(manual_control.Y_MIN_PIN, pull_up=True)
+    y_min = Button(manual_control.Y_MIN_PIN, pull_up=False)
     x_min = Button(manual_control.X_MIN_PIN, pull_up=True)
 
     y_min.when_pressed = manual_control.on_y_min_pressed
