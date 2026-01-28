@@ -121,30 +121,26 @@ def keyboard_listener():
             key = key.lower()
 
             if key == "w":
-                if not y_backoff_running.is_set():
-                    continuous_forward = not continuous_forward
+                continuous_forward = not continuous_forward
                 if continuous_forward:
                     continuous_backward = False  # stop opposite modes
                     continuous_left = False
                     continuous_right = False
 
             elif key == "a":
-                if not x_backoff_running.is_set():
-                    continuous_left = not continuous_left
+                continuous_left = not continuous_left
                 if continuous_left:
                     continuous_right = False  # stop opposite modes
                     continuous_backward = False
                     continuous_forward = False
             elif key == "s":
-                if not y_backoff_running.is_set():
-                    continuous_backward = not continuous_backward
+                continuous_backward = not continuous_backward
                 if continuous_backward:
                     continuous_forward = False  # stop opposite modes
                     continuous_left = False
                     continuous_right = False
             elif key == "d":
-                if not x_backoff_running.is_set():
-                    continuous_right = not continuous_right
+                continuous_right = not continuous_right
                 if continuous_right:
                     continuous_left = False  # stop opposite modes
                     continuous_backward = False
@@ -275,15 +271,15 @@ def motor_control_loop():
         if is_moving_left or continuous_left:
             # Don't move left if we might hit something (add upper limit check if available)
             step_motor_left()
-            if is_moving_right or continuous_right:
-                # Allow right movement if backoff is running, even if endstop is pressed
-                if not x_min_pressed.is_set() or x_backoff_running.is_set():
-                    step_motor_right()
-                    x_axis += 1
-                else:
-                    # Stop continuous motion if endstop hit
-                    continuous_right = False
-                is_moving_right = False
+            x_axis -= 1
+            is_moving_left = False  # single step consumed
+
+        if is_moving_right or continuous_right:
+            # Don't move right if X endstop is pressed
+            if not x_min_pressed.is_set():
+                step_motor_right()
+                x_axis += 1
+            else:
                 # Stop continuous motion if endstop hit
                 continuous_right = False
             is_moving_right = False
