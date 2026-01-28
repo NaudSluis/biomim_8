@@ -177,25 +177,21 @@ def keyboard_listener():
 
 def step_motor_forward():
     global Motor1
-    print("DEBUG: step_motor_forward called")
     Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_backward():
     global Motor1
-    print("DEBUG: step_motor_backward called")
     Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_right():
     global Motor2
-    print("DEBUG: step_motor_right called")
     Motor2.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_left():
     global Motor2
-    print("DEBUG: step_motor_left called")
     Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 
@@ -360,9 +356,10 @@ def back_off_x_endstop():
 def back_off_y_endstop():
     """Backs off from the Y endstop by moving forward (away) for 0.5 seconds."""
     global continuous_forward
+
     try:
         print("DEBUG: Y backoff started")
-        end = time.monotonic() + 0.5
+        end = time.monotonic() + 1
         while time.monotonic() < end:
             continuous_forward = True
             time.sleep(0.01)
