@@ -177,21 +177,25 @@ def keyboard_listener():
 
 def step_motor_forward():
     global Motor1
+    print("DEBUG: step_motor_forward called")
     Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_backward():
     global Motor1
+    print("DEBUG: step_motor_backward called")
     Motor1.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_right():
     global Motor2
+    print("DEBUG: step_motor_right called")
     Motor2.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
 
 
 def step_motor_left():
     global Motor2
+    print("DEBUG: step_motor_left called")
     Motor2.TurnStep(Dir="backward", steps=20, stepdelay=0.00000001)
 
 
