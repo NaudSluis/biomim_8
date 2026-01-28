@@ -442,7 +442,8 @@ def start_manual_control():
     # Pin factory for gpiozero, as there were poblems when not set. It looked like there were multiple conflicting pin factories.
     Device.pin_factory = RPiGPIOFactory()
 
-    y_min = Button(Y_MIN_PIN, pull_up=True)
+    # Pull up is not the same, this is likely a hardware issue and could easily not work in the future
+    y_min = Button(Y_MIN_PIN, pull_up=False) 
     x_min = Button(X_MIN_PIN, pull_up=True)
 
     try:
