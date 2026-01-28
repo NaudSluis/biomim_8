@@ -44,7 +44,7 @@ def move_to_home(step_delay=0.0000001):
     print("  X axis: moving backward toward endstop...")
     while not manual_control.x_min_pressed.is_set():
         manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        time.sleep(0.01)
+        # time.sleep(0.01)
 
     print("  X axis: endstop hit, waiting for backoff...")
     # Wait for backoff thread to start
@@ -61,7 +61,7 @@ def move_to_home(step_delay=0.0000001):
     print("  Y axis: moving backward toward endstop...")
     while not manual_control.y_min_pressed.is_set():
         manual_control.Motor1.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        time.sleep(0.01)
+        # time.sleep(0.01)
 
     print("  Y axis: endstop hit, waiting for backoff...")
     # Wait for backoff thread to start
@@ -142,7 +142,7 @@ def calibration_listener():
         while manual_control.running:
             key = get_key_nonblocking()
             if not key:
-                time.sleep(0.01)
+                # time.sleep(0.01)
                 continue
 
             key = key.lower()
