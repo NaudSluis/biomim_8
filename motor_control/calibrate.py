@@ -194,6 +194,7 @@ def calibration_listener():
                 manual_control.continuous_right = False
             #save house position
             elif key == "p":
+                print("Saving house position...")
                 dump_to_json(manual_control.x_axis, manual_control.y_axis, filename="motor_control/calibration_house.json")
             # Save & exit
             elif key in ("\n", "\r"):
