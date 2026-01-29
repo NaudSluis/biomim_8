@@ -235,6 +235,15 @@ def main():
         print("KeyboardInterrupt received, shutting down.")
         shutdown_event.set()
 
+    # Signal background threads to stop
+    try:
+        import motor_control.manual_control as manual_control
+        manual_control.running = False
+    except Exception:
+        pass
+
+    print("Exiting now.")
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
