@@ -3,11 +3,12 @@ import os
 
 # --- FIX PATH ---
 # Add parent directory to path so we can import 'motor_control' package
+# At the end, there were some issues with getting the button working, one of whihch was relative imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import json
 from motor_control import manual_control
-from motor_control.calibrate import move_to_home, reset_manual_state
+from motor_control.calibrate import move_to_home
 from motor_control.manual_control import (
     initialize_motors,
     pump_one_forward,
@@ -16,7 +17,6 @@ from motor_control.manual_control import (
 )
 from motor_control.DRV8825 import DRV8825
 import time
-import serial
 from datetime import datetime
 import threading
 from gpiozero import Button, Device
@@ -114,37 +114,33 @@ def demo():
     try:
         move_to_home()
 
-        # --- FIX: USE ABSOLUTE PATH ---
         # This finds the directory where THIS script is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
+
         # This joins the directory with the filename
         json_path = os.path.join(script_dir, "calibration_info.json")
         house_json_path = os.path.join(script_dir, "calibration_house.json")
-        
-        print(f"Looking for calibration file at: {json_path}") # Debug print
 
         calibrated_x, calibrated_y = get_calibrated_postion(json_path)
-        calibrated_x_house, calibrated_y_house = get_calibrated_postion(house_json_path)
+        calibrated_x_house, _ = get_calibrated_postion(house_json_path)
 
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
             return
 
         move_to_position(0, calibrated_y)  # Move to spray position
-        pump_one_forward(duration=10)
-        move_to_position(calibrated_x, 0)
-        time.sleep(5)
-        rotate_sponge()
+        pump_one_forward(duration=10)   # Spray for 10 seconds
+        move_to_position(calibrated_x, 0)   # Move to sponge position
+        rotate_sponge() # Rotate sponge
         move_to_position(-calibrated_x, 0)  # Move back to spray
-        pump_one_forward(duration=10)
-        move_to_home()
-        move_to_position(calibrated_x_house, calibrated_y_house)  # Move to house position
+        pump_one_forward(duration=10)  # Spray for another 10 seconds
+        move_to_home() # Move back to home
+        move_to_position(calibrated_x_house, 0)  # Move to house position
 
     except Exception as e:
         print(f"Error during demo: {e}")
         
     finally:
-        # --- CLEANUP & UNLOCK ---
         manual_control.running = False
 
         # Safely stop motors
@@ -178,7 +174,6 @@ def demo():
         # Logging - Use Absolute Path here as well to be safe
         end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         try:
-            # Determine path for logging.json (assumed to be in same folder as script)
             script_dir = os.path.dirname(os.path.abspath(__file__))
             log_path = os.path.join(script_dir, "logging.json")
             
@@ -204,7 +199,6 @@ def main():
     # Configure button on GPIO23 (wired to GND)
     try:
         button = Button(23, pull_up=True, bounce_time=0.01)
-        print("Button initialized on GPIO23")
     except Exception as e:
         print(f"Failed to initialize button: {e}")
         return
@@ -213,23 +207,18 @@ def main():
         global is_running
         
         if is_running:
-            print("Wash already in progress. Ignoring press.")
             return
-
-        print("Button pressed! Starting demo thread...")
         
         is_running = True 
         demo_thread = threading.Thread(target=demo)
         demo_thread.start()
 
     button.when_pressed = on_button_pressed
-    print("Button callback registered. Waiting for presses...")
 
     try:
         while not shutdown_event.is_set():
             shutdown_event.wait(1)
     except KeyboardInterrupt:
-        print("KeyboardInterrupt received, shutting down.")
         shutdown_event.set()
 
     try:

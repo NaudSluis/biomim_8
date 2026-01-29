@@ -1,5 +1,6 @@
 """
-This file is the base for the control of the robot. It allows for manual control of the motors via keyboard input.
+This file is the base for the control of the robot. It allows for manual control of the motors via keyboard input. Read comments
+carefully when modifying.
 """
 import sys
 import termios
@@ -148,7 +149,8 @@ def keyboard_listener():
             elif key == "r":
                 rotate_sponge()
             elif key == "e":
-                pump_one_forward(speed=1, duration=10)
+                pump_one_forward(duration=10)
+            # These are for one step at a time. Note that this is very slow and we did not use this in calibration
             elif key == "z":
                 is_moving_left = True
             elif key == "x":
@@ -174,6 +176,9 @@ def keyboard_listener():
 
 # =================== Motor Control Functions ===================
 
+# ------- Basic Step Functions -------
+# These functions perform a fixed number of steps in a given direction. The step delay is set so low that
+# it is lower than it can actually achieve, to maximize speed. 0.05 from a documentation was slower.
 
 def step_motor_forward():
     global Motor1
@@ -221,7 +226,8 @@ def pump_one_forward(duration=10):
 
 def initialize_motors():
     """
-    Initializes motors with pin layout
+    Initializes motors with pin layout. It is important to not initialize on starting the program, as gpiozero
+    seems to have issues if multiple pin factories are used. This function is called after setting the pin factory.
     """
     global IN1, IN2, DIR1, STEP1, ENABLE1, MODE1, DIR2, STEP2, ENABLE2, MODE2
 
@@ -248,41 +254,34 @@ def motor_control_loop():
     while running:
         # -------- Y AXIS --------
         if is_moving_forward or continuous_forward or y_backoff_running.is_set():
-            # Allow forward movement for backoff even if Y endstop is pressed
             if not y_min_pressed.is_set() or y_backoff_running.is_set():
                 step_motor_forward()
                 y_axis += 1
-            # else: (no else needed, as forward is always safe)
-            is_moving_forward = False  # single step consumed
+            is_moving_forward = False
 
         if is_moving_backward or continuous_backward:
-            # Don't move backward if Y endstop is pressed
             if not y_min_pressed.is_set():
                 step_motor_backward()
                 y_axis -= 1
             else:
-                # Stop continuous motion if endstop hit
                 continuous_backward = False
             is_moving_backward = False
 
         # -------- X AXIS --------
         if is_moving_left or continuous_left:
-            # Don't move left if we might hit something (add upper limit check if available)
             step_motor_left()
             x_axis -= 1
-            is_moving_left = False  # single step consumed
+            is_moving_left = False
 
         if is_moving_right or continuous_right or x_backoff_running.is_set():
-            # Allow right movement for backoff even if X endstop is pressed
             if not x_min_pressed.is_set() or x_backoff_running.is_set():
                 step_motor_right()
                 x_axis += 1
             else:
-                # Stop continuous motion if endstop hit
                 continuous_right = False
             is_moving_right = False
 
-        # Small sleep to prevent CPU hog
+        # Small sleep to settle
         time.sleep(0.005)
 
 
@@ -337,95 +336,72 @@ def stop_all_motion():
 
 
 def back_off_x_endstop():
-    """Backs off from the X endstop by moving right (away) for 0.5 seconds."""
+    """Backs off from the X endstop by moving right (away) for 1 second."""
     global continuous_right
     try:
-        print("DEBUG: X backoff started")
         end = time.monotonic() + 1
         while time.monotonic() < end:
             continuous_right = True
             time.sleep(0.01)
     finally:
         continuous_right = False
-        print("DEBUG: X backoff complete")
     # Clear flags after backoff completes
+
     time.sleep(0.1)  # Give it a moment to settle
     x_min_pressed.clear()
     x_backoff_running.clear()
-    print("DEBUG: X flags cleared")
 
 
 def back_off_y_endstop():
-    """Backs off from the Y endstop by moving forward (away) for 0.5 seconds."""
+    """Backs off from the Y endstop by moving forward (away) for 1 second."""
     global continuous_forward
 
     try:
-        print("DEBUG: Y backoff started")
         end = time.monotonic() + 1
         while time.monotonic() < end:
             continuous_forward = True
             time.sleep(0.01)
     finally:
         continuous_forward = False
-        print("DEBUG: Y backoff complete")
     # Clear flags after backoff completes
     time.sleep(0.1)  # Give it a moment to settle
     y_min_pressed.clear()
     y_backoff_running.clear()
-    print("DEBUG: Y flags cleared")
 
 
 def on_x_min_pressed():
     """Handles X min endstop press event."""
-    print("DEBUG: X endstop pressed!")
     
     if x_backoff_running.is_set():
-        print("DEBUG: X backoff already running, ignoring")
         return
 
     x_min_pressed.set()
-    print("DEBUG: X min_pressed set, stopping all motion")
     stop_all_motion()
 
     x_backoff_running.set()
-    print("DEBUG: Starting X backoff thread")
     threading.Thread(target=back_off_x_endstop, daemon=True).start()
 
 
 def on_x_min_released():
-    """Handles X min endstop release event."""
-    print("DEBUG: X endstop released")
+    """Handles X min endstop release event. Not really used, but kept for symmetry and possible future use."""
     # Clear flags only after backoff completes (handled in back_off function)
 
 
 def on_y_min_pressed():
     """Handles Y min endstop press event."""
-    print("DEBUG: Y endstop pressed!")
-    try:
-        print(f"DEBUG: Y_MIN_PIN value (should be 0 if pressed): {y_min.value}")
-    except Exception as e:
-        print(f"DEBUG: Could not read y_min.value: {e}")
     
     if y_backoff_running.is_set():
-        print("DEBUG: Y backoff already running, ignoring")
         return
 
     y_min_pressed.set()
-    print("DEBUG: Y min_pressed set, stopping all motion")
     stop_all_motion()
 
     y_backoff_running.set()
-    print("DEBUG: Starting Y backoff thread")
     threading.Thread(target=back_off_y_endstop, daemon=True).start()
 
 
 def on_y_min_released():
-    """Handles Y min endstop release event."""
-    print("DEBUG: Y endstop released")
-    try:
-        print(f"DEBUG: Y_MIN_PIN value (should be 1 if released): {y_min.value}")
-    except Exception as e:
-        print(f"DEBUG: Could not read y_min.value: {e}")
+    """Handles Y min endstop release event. Not really used, but kept for symmetry and possible future use."""
     # Clear flags only after backoff completes (handled in back_off function)
 
 
@@ -442,13 +418,13 @@ def start_manual_control():
     # Pin factory for gpiozero, as there were poblems when not set. It looked like there were multiple conflicting pin factories.
     Device.pin_factory = RPiGPIOFactory()
 
-    # Pull up is not the same, this is likely a hardware issue and could easily not work in the future
+    # Pull up is not the same, this is likely a hardware issue and could easily not work in the future. We did not have time to debug.
     y_min = Button(Y_MIN_PIN, pull_up=False) 
     x_min = Button(X_MIN_PIN, pull_up=True)
 
     try:
         servo = Servo(26)
-        servo.detach()  # VERY IMPORTANT
+        servo.detach()  # Important, detach to avoid jitter and power draw
     except Exception as e:
         print(f"Servo init failed: {e}")
         servo = None
@@ -468,6 +444,7 @@ def start_manual_control():
 
     keyboard_listener()
 
+    # Cleanup on exit.
     running = False
     Motor1.Stop()
     Motor2.Stop()
@@ -485,7 +462,8 @@ def start_manual_control():
     Motor2.enable_pin.close()
 
     y_min.close()
-
+    x_min.close()
+    
     print("Program exited.")
 
 

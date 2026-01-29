@@ -41,12 +41,9 @@ def move_to_home(step_delay=0.0000001):
     print("Homing in progress...")
 
     # ---- X axis (move backward toward X-min) ----
-    print("  X axis: moving backward toward endstop...")
     while not manual_control.x_min_pressed.is_set():
         manual_control.Motor2.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        # time.sleep(0.01)
 
-    print("  X axis: endstop hit, waiting for backoff...")
     # Wait for backoff thread to start
     time.sleep(0.05)
 
@@ -55,15 +52,11 @@ def move_to_home(step_delay=0.0000001):
         time.sleep(0.1)
 
     time.sleep(0.2)  # small settle delay
-    print("  X axis: homing complete")
 
     # ---- Y axis (move backward toward Y-min) ----
-    print("  Y axis: moving backward toward endstop...")
     while not manual_control.y_min_pressed.is_set():
         manual_control.Motor1.TurnStep(Dir="backward", steps=20, stepdelay=step_delay)
-        # time.sleep(0.01)
 
-    print("  Y axis: endstop hit, waiting for backoff...")
     # Wait for backoff thread to start
     time.sleep(0.05)
 
@@ -72,13 +65,11 @@ def move_to_home(step_delay=0.0000001):
         time.sleep(0.1)
 
     time.sleep(0.2)  # small settle delay
-    print("  Y axis: homing complete")
 
     # Reset counters
     manual_control.x_axis = 0
     manual_control.y_axis = 0
 
-    print("Homing complete")
 
 
 # ============== Reset State ==============
@@ -107,6 +98,8 @@ def reset_manual_state():
 
 
 def dump_to_json(x_axis, y_axis, filename="motor_control/calibration_info.json"):
+    """Dumps the calibration coordinates to a JSON file."""
+
     coords = {"end_position_x": x_axis, "end_position_y": y_axis}
 
     try:
@@ -141,9 +134,6 @@ def calibration_listener():
     try:
         while manual_control.running:
             key = get_key_nonblocking()
-            if not key:
-                # time.sleep(0.01)
-                continue
 
             key = key.lower()
 
@@ -176,7 +166,7 @@ def calibration_listener():
                 manual_control.continuous_forward = False
                 manual_control.continuous_backward = False
 
-            # Single steps
+            # Single steps, not used in practise for calibration but left for completeness
             elif key == "y":
                 manual_control.is_moving_forward = True
             elif key == "h":
@@ -192,10 +182,12 @@ def calibration_listener():
                 manual_control.continuous_backward = False
                 manual_control.continuous_left = False
                 manual_control.continuous_right = False
-            #save house position
+
+            #Save house position and continue
             elif key == "p":
                 print("Saving house position...")
                 dump_to_json(manual_control.x_axis, manual_control.y_axis, filename="motor_control/calibration_house.json")
+
             # Save & exit
             elif key in ("\n", "\r"):
                 dump_to_json(manual_control.x_axis, manual_control.y_axis)
@@ -213,8 +205,6 @@ def calibration_listener():
 
 
 def start_calibration_control():
-    print("Starting calibration in 2 seconds...")
-    time.sleep(2)
 
     # Initialize GPIO and endstops
     Device.pin_factory = RPiGPIOFactory()
