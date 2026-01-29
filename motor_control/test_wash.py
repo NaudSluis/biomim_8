@@ -187,5 +187,4 @@ def demo():
     except Exception as e:
         print(f"Error logging data: {e}")
 
-    # Exit the entire program
-    sys.exit(0)
+    # Do not exit the entire program here; let the caller decide how to exit

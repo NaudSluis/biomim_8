@@ -1,7 +1,7 @@
 from gpiozero import Button, Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
 from motor_control.test_wash import demo
-from signal import pause
+import threading
 import sys
 import logging
 
@@ -18,9 +18,12 @@ logging.basicConfig(
 logging.info("Button launcher started")
 
 # Graceful shutdown handler
+
+shutdown_event = threading.Event()
+
 def handle_shutdown(signum, frame):
     logging.info(f"Received signal {signum}, shutting down.")
-    sys.exit(0)
+    shutdown_event.set()
 
 # Register signal handlers for SIGINT (Ctrl+C) and SIGTERM (systemd stop)
 signal.signal(signal.SIGINT, handle_shutdown)
@@ -63,6 +66,17 @@ def run_script():
         is_running = False  # Unlock when done
         logging.info("Wash finished. Ready for next press.")
 
+
 button.when_pressed = run_script
 logging.info("Button callback registered. Waiting for presses...")
-pause()
+
+# Robust event loop to keep the program alive and responsive to signals
+def wait_forever():
+    try:
+        while not shutdown_event.is_set():
+            shutdown_event.wait(1)
+    except KeyboardInterrupt:
+        logging.info("KeyboardInterrupt received, shutting down.")
+        shutdown_event.set()
+
+wait_forever()
