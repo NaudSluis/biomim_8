@@ -221,4 +221,3 @@ def demo(x_min, y_min):
         print(f"Error logging data: {e}")
 
     # Do not exit the entire program here; let the caller decide how to exit
-d
