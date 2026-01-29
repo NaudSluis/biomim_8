@@ -134,6 +134,8 @@ def calibration_listener():
     try:
         while manual_control.running:
             key = get_key_nonblocking()
+            if key is None:
+                continue
 
             key = key.lower()
 
