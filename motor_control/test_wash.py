@@ -6,7 +6,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import json
-import sys
 from motor_control import manual_control
 from motor_control.calibrate import move_to_home, reset_manual_state
 from motor_control.manual_control import (
@@ -42,13 +41,9 @@ signal.signal(signal.SIGTERM, handle_shutdown)
 
 # ===================== Calibration Data Retrieval =====================
 
-
 def get_calibrated_postion(json_file: str):
     """
     Retrieves earlier calibrated position
-
-    :param json_file: Name of the json file where the calibration data is stored
-    :type json_file: str
     """
     try:
         with open(json_file, "r") as fp:
@@ -73,16 +68,12 @@ def get_calibrated_postion(json_file: str):
 
 # ===================== Wash Cycle =====================
 
-
 def demo():
     """
     Performs one washing cycle and logs to json
     """
     global is_running
     
-    # NOTE: The 'is_running' check and set to True is now done in main()
-    # to prevent race conditions before the thread starts.
-
     # Initialize motors
     Motor1, Motor2, pump1 = initialize_motors()
     manual_control.Motor1 = Motor1
@@ -123,9 +114,15 @@ def demo():
     try:
         move_to_home()
 
-        calibrated_x, calibrated_y = get_calibrated_postion(
-            "motor_control/calibration_info.json"
-        )
+        # --- FIX: USE ABSOLUTE PATH ---
+        # This finds the directory where THIS script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # This joins the directory with the filename
+        json_path = os.path.join(script_dir, "calibration_info.json")
+        
+        print(f"Looking for calibration file at: {json_path}") # Debug print
+
+        calibrated_x, calibrated_y = get_calibrated_postion(json_path)
 
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
@@ -174,18 +171,22 @@ def demo():
         except Exception as e:
             print(f"Error cleaning up GPIO: {e}")
 
-        # Logging
+        # Logging - Use Absolute Path here as well to be safe
         end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         try:
+            # Determine path for logging.json (assumed to be in same folder as script)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            log_path = os.path.join(script_dir, "logging.json")
+            
             try:
-                with open("logging.json", "r") as fp:
+                with open(log_path, "r") as fp:
                     logs = json.load(fp)
             except (FileNotFoundError, json.JSONDecodeError):
                 logs = []
             
             logs.append({"start_time": start, "end_time": end})
             
-            with open("logging.json", "w") as fp:
+            with open(log_path, "w") as fp:
                 json.dump(logs, fp, indent=2)
         except Exception as e:
             print(f"Error logging data: {e}")
@@ -194,7 +195,6 @@ def demo():
         is_running = False
 
 
-# --- Button setup and main loop ---
 # --- Button setup and main loop ---
 def main():
     # Configure button on GPIO23 (wired to GND)
@@ -208,18 +208,13 @@ def main():
     def on_button_pressed():
         global is_running
         
-        # 1. Check lock here to prevent spawning multiple threads
         if is_running:
             print("Wash already in progress. Ignoring press.")
             return
 
         print("Button pressed! Starting demo thread...")
         
-        # 2. Set lock immediately to prevent race conditions
         is_running = True 
-
-        # 3. Run demo in a separate thread 
-        # This releases the GPIO thread immediately so endstops work
         demo_thread = threading.Thread(target=demo)
         demo_thread.start()
 
@@ -233,7 +228,6 @@ def main():
         print("KeyboardInterrupt received, shutting down.")
         shutdown_event.set()
 
-    # Signal background threads to stop
     try:
         import motor_control.manual_control as manual_control
         manual_control.running = False
