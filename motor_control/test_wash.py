@@ -50,7 +50,7 @@ def get_calibrated_postion(json_file: str):
 # ===================== Wash Cycle =====================
 
 
-def demo():
+def demo(x_min, y_min):
     """
     Performs one washing cycle and logs to json
     """
@@ -221,3 +221,4 @@ def demo():
         print(f"Error logging data: {e}")
 
     # Do not exit the entire program here; let the caller decide how to exit
+d
