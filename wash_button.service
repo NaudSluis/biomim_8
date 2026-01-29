@@ -3,7 +3,7 @@ Description=Run test_wash.py on Button Press
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/group8/biomim_8/button_launcher.py
+ExecStart=/usr/bin/python3 /home/group8/biomim_8/motor_control/test_wash.py
 WorkingDirectory=/home/group8
 StandardOutput=inherit
 StandardError=inherit

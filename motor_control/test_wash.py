@@ -15,6 +15,23 @@ from datetime import datetime
 import threading
 from gpiozero import Button, Device
 from gpiozero.pins.rpigpio import RPiGPIOFactory
+import signal
+
+# Set pin factory at the very top
+Device.pin_factory = RPiGPIOFactory()
+
+# Global lock to prevent concurrent demo runs
+is_running = False
+
+# Graceful shutdown event
+shutdown_event = threading.Event()
+
+def handle_shutdown(signum, frame):
+    print(f"Received signal {signum}, shutting down.")
+    shutdown_event.set()
+
+signal.signal(signal.SIGINT, handle_shutdown)
+signal.signal(signal.SIGTERM, handle_shutdown)
 
 # ===================== Calibration Data Retrieval =====================
 
@@ -55,8 +72,11 @@ def demo():
     Performs one washing cycle and logs to json
     """
 
-    # Initialize GPIO factory FIRST, before any motor initialization
-    Device.pin_factory = RPiGPIOFactory()
+    global is_running
+    if is_running:
+        print("Wash already in progress. Ignoring press.")
+        return
+    is_running = True
 
     # Initialize motors
     Motor1, Motor2, pump1 = initialize_motors()
@@ -187,4 +207,34 @@ def demo():
     except Exception as e:
         print(f"Error logging data: {e}")
 
+    is_running = False
     # Do not exit the entire program here; let the caller decide how to exit
+
+
+# --- Button setup and main loop ---
+def main():
+    # Configure button on GPIO23 (wired to GND)
+    try:
+        button = Button(23, pull_up=True, bounce_time=0.01)
+        print("Button initialized on GPIO23")
+    except Exception as e:
+        print(f"Failed to initialize button: {e}")
+        return
+
+    def on_button_pressed():
+        print("Button pressed!")
+        demo()
+
+    button.when_pressed = on_button_pressed
+    print("Button callback registered. Waiting for presses...")
+
+    try:
+        while not shutdown_event.is_set():
+            shutdown_event.wait(1)
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt received, shutting down.")
+        shutdown_event.set()
+
+
+if __name__ == "__main__":
+    main()
