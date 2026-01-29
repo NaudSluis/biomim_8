@@ -71,12 +71,10 @@ def demo():
     """
     Performs one washing cycle and logs to json
     """
-
     global is_running
-    if is_running:
-        print("Wash already in progress. Ignoring press.")
-        return
-    is_running = True
+    
+    # NOTE: The 'is_running' check and set to True is now done in main()
+    # to prevent race conditions before the thread starts.
 
     # Initialize motors
     Motor1, Motor2, pump1 = initialize_motors()
@@ -87,7 +85,7 @@ def demo():
     # Initialize servo
     try:
         manual_control.servo = manual_control.Servo(26)
-        manual_control.servo.detach()  # Important to avoid jitter
+        manual_control.servo.detach() 
     except Exception as e:
         print(f"Servo init failed: {e}")
         manual_control.servo = None
@@ -116,45 +114,35 @@ def demo():
     start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-
         move_to_home()
 
         calibrated_x, calibrated_y = get_calibrated_postion(
             "motor_control/calibration_info.json"
         )
-        # calibrated_x_house, _ = get_calibrated_postion("motor_control/calibration_house.json")
 
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
             return
 
         move_to_position(0, calibrated_y)  # Move to spray position
-
         pump_one_forward(duration=10)
-
         move_to_position(calibrated_x, 0)
-
         rotate_sponge()
-
         move_to_position(-calibrated_x, 0)  # Move back to spray
-
         pump_one_forward(duration=10)
-
         move_to_home()
-
-        # move_to_position(calibrated_x_house, 0)  # Move to house position
 
     except Exception as e:
         print(f"Error during demo: {e}")
+        
     finally:
+        # --- CLEANUP & UNLOCK ---
         manual_control.running = False
 
-        # Safely stop motors if they were initialized
+        # Safely stop motors
         try:
-            if "Motor1" in locals():
-                Motor1.Stop()
-            if "Motor2" in locals():
-                Motor2.Stop()
+            if "Motor1" in locals(): Motor1.Stop()
+            if "Motor2" in locals(): Motor2.Stop()
         except Exception as e:
             print(f"Error stopping motors: {e}")
 
@@ -164,53 +152,42 @@ def demo():
                 Motor1.dir_pin.close()
             if "Motor1" in locals() and hasattr(Motor1, "step_pin") and Motor1.step_pin:
                 Motor1.step_pin.close()
-            if (
-                "Motor1" in locals()
-                and hasattr(Motor1, "enable_pin")
-                and Motor1.enable_pin
-            ):
+            if "Motor1" in locals() and hasattr(Motor1, "enable_pin") and Motor1.enable_pin:
                 Motor1.enable_pin.close()
 
             if "Motor2" in locals() and hasattr(Motor2, "dir_pin") and Motor2.dir_pin:
                 Motor2.dir_pin.close()
             if "Motor2" in locals() and hasattr(Motor2, "step_pin") and Motor2.step_pin:
                 Motor2.step_pin.close()
-            if (
-                "Motor2" in locals()
-                and hasattr(Motor2, "enable_pin")
-                and Motor2.enable_pin
-            ):
+            if "Motor2" in locals() and hasattr(Motor2, "enable_pin") and Motor2.enable_pin:
                 Motor2.enable_pin.close()
 
-            if y_min:
-                y_min.close()
-            if x_min:
-                x_min.close()
+            if y_min: y_min.close()
+            if x_min: x_min.close()
         except Exception as e:
             print(f"Error cleaning up GPIO: {e}")
 
-    end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    try:
-        # Read existing data, append new entry, and write back
+        # Logging
+        end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         try:
-            with open("logging.json", "r") as fp:
-                logs = json.load(fp)
-        except (FileNotFoundError, json.JSONDecodeError):
-            logs = []
-        
-        logs.append({"start_time": start, "end_time": end})
-        
-        with open("logging.json", "w") as fp:
-            json.dump(logs, fp, indent=2)
+            try:
+                with open("logging.json", "r") as fp:
+                    logs = json.load(fp)
+            except (FileNotFoundError, json.JSONDecodeError):
+                logs = []
+            
+            logs.append({"start_time": start, "end_time": end})
+            
+            with open("logging.json", "w") as fp:
+                json.dump(logs, fp, indent=2)
+        except Exception as e:
+            print(f"Error logging data: {e}")
 
-    except Exception as e:
-        print(f"Error logging data: {e}")
-
-    is_running = False
-    # Do not exit the entire program here; let the caller decide how to exit
+        # Unlock allows the button to be pressed again
+        is_running = False
 
 
+# --- Button setup and main loop ---
 # --- Button setup and main loop ---
 def main():
     # Configure button on GPIO23 (wired to GND)
@@ -222,8 +199,22 @@ def main():
         return
 
     def on_button_pressed():
-        print("Button pressed!")
-        demo()
+        global is_running
+        
+        # 1. Check lock here to prevent spawning multiple threads
+        if is_running:
+            print("Wash already in progress. Ignoring press.")
+            return
+
+        print("Button pressed! Starting demo thread...")
+        
+        # 2. Set lock immediately to prevent race conditions
+        is_running = True 
+
+        # 3. Run demo in a separate thread 
+        # This releases the GPIO thread immediately so endstops work
+        demo_thread = threading.Thread(target=demo)
+        demo_thread.start()
 
     button.when_pressed = on_button_pressed
     print("Button callback registered. Waiting for presses...")
