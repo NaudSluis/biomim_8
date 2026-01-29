@@ -54,7 +54,7 @@ Also attach the 12v powersupply to the driver module.
 
 To the pump, attach the tubes and run them through the bottomplate. Attach the nozzle to the tube and then the nozzle to the clip on the side of the hood.
 
-!TODO: Endstops and where to put them
+Make sure the endstops are fitted to the underside of the rail and the back of the servo holder. The endstops are VERY important for the program, as these are an all-stop when their hit. If they are not pressed, the motor will just continue to turn.
 
 Activating the program can be a bit of a hassle. For our demonstration, we attached a button to the system, which activates the full cycle when pressed. This is nice, but there are also programs for manual_control and calibration. The manual_control and calibration mode do, right now, not work in combination with the button. The reason for this, is that when the button mode is on, the Pi is constantly listening on the GPIO process for a press of the button. That means, that when you try to start either the manual or calibration mode, it says that GPIO is busy. 
 
@@ -62,25 +62,16 @@ So, when you want to start the manual or calibration mode, make sure to fist che
 
 If you want to start the button mode, use ```sudo systemctl start wash_button.service``` and check with ```sudo systemctl status wash_button.service```. 
 
-#### Error Handeling
-
-
-
-
-```Error opening serial port '/dev/ttyUSB0': No such file or directory```  
-This means that the Pi does not see that the arduino is connected via USB0. This can be either true, or it is in the port, but is does not see it. To get rid of the error, disconnect the cable, reboot the Arduino and reconnect the cable (rebooting the Pi is also possible, but that takes longer).
-
-The reason the error occured for us was due to the fact that we ran more volt through it then the Arduino wanted, which is probably why it would disconnect itself. Make sure to use a powersupply of 5v, or a max of 7v (we did this a bit experimentally). 
-
-
-```Error: invalid sketch name, the sketch name must match the folder name``` on Arduino  
-This error occurs when the name of the Sketch (.ino) is not the same as the folder it is in. So match them!
+#### Error Handeling/Quirks
+- GPIO busy: A GPIO pin is being used, make sure the button mode is off (```sudo systemctl status wash_button.service```) or try kill the program and restart.
+- For some reason, the program won't kill anymore with Crtl + C, using Crtl + \ always works
+- The code uses threading for motor control; improper shutdown may leave threads running or GPIO pins in an undefined state.
 
 #### Contact information
 
-- Pepijn ten Hoor
-- Tijl Smeets
-- Mahitaap Ahmed
+- Pepijn ten Hoor ()
+- Tijl Smeets ()
+- Mahitaap Ahmed ()
 - Naud Sluis (naud.sluis@gmail.com)
 
 
