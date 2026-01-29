@@ -119,10 +119,12 @@ def demo():
         script_dir = os.path.dirname(os.path.abspath(__file__))
         # This joins the directory with the filename
         json_path = os.path.join(script_dir, "calibration_info.json")
+        house_json_path = os.path.join(script_dir, "calibration_house.json")
         
         print(f"Looking for calibration file at: {json_path}") # Debug print
 
         calibrated_x, calibrated_y = get_calibrated_postion(json_path)
+        calibrated_x_house, calibrated_y_house = get_calibrated_postion(house_json_path)
 
         if calibrated_x is None or calibrated_y is None:
             print("Calibration data is invalid.")
@@ -136,6 +138,7 @@ def demo():
         move_to_position(-calibrated_x, 0)  # Move back to spray
         pump_one_forward(duration=10)
         move_to_home()
+        move_to_position(calibrated_x_house, calibrated_y_house)  # Move to house position
 
     except Exception as e:
         print(f"Error during demo: {e}")
