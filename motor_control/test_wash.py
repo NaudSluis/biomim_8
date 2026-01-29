@@ -88,43 +88,6 @@ def demo(x_min, y_min):
 
     # Give thread time to start
     time.sleep(0.1)
-    # Initialize GPIO factory FIRST, before any motor initialization
-    Device.pin_factory = RPiGPIOFactory()
-
-    # Initialize motors
-    Motor1, Motor2, pump1 = initialize_motors()
-    manual_control.Motor1 = Motor1
-    manual_control.Motor2 = Motor2
-    manual_control.pump1 = pump1
-
-    # Initialize servo
-    try:
-        manual_control.servo = manual_control.Servo(26)
-        manual_control.servo.detach()  # Important to avoid jitter
-    except Exception as e:
-        print(f"Servo init failed: {e}")
-        manual_control.servo = None
-
-    # Initialize endstops
-    y_min = Button(manual_control.Y_MIN_PIN, pull_up=False)
-    x_min = Button(manual_control.X_MIN_PIN, pull_up=True)
-
-    y_min.when_pressed = manual_control.on_y_min_pressed
-    y_min.when_released = manual_control.on_y_min_released
-
-    x_min.when_pressed = manual_control.on_x_min_pressed
-    x_min.when_released = manual_control.on_x_min_released
-
-    manual_control.running = True
-
-    # Start motor control loop thread
-    motor_thread = threading.Thread(
-        target=manual_control.motor_control_loop, daemon=True
-    )
-    motor_thread.start()
-
-    # Give thread time to start
-    time.sleep(0.1)
 
     start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
