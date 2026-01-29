@@ -1,9 +1,9 @@
 from gpiozero import Button
 import time
 
-button = Button(25, pull_up=True, bounce_time=0.01)
+button = Button(23, pull_up=True, bounce_time=0.01)
 
-print("Waiting for button press on GPIO25...")
+print("Waiting for button press on GPIO23...")
 
 while True:
     if button.is_pressed:
