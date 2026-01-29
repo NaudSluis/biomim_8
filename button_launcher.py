@@ -1,8 +1,12 @@
-from gpiozero import Button
+from gpiozero import Button, Device
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 from motor_control.test_wash import demo
 from signal import pause
 import sys
 import logging
+
+import signal
+
 
 # Setup logging to file since we can't see stdout in background
 logging.basicConfig(
@@ -13,10 +17,28 @@ logging.basicConfig(
 
 logging.info("Button launcher started")
 
-# Configure button on GPIO25 (wired to GND)
+# Graceful shutdown handler
+def handle_shutdown(signum, frame):
+    logging.info(f"Received signal {signum}, shutting down.")
+    sys.exit(0)
+
+# Register signal handlers for SIGINT (Ctrl+C) and SIGTERM (systemd stop)
+signal.signal(signal.SIGINT, handle_shutdown)
+signal.signal(signal.SIGTERM, handle_shutdown)
+
+# Set pin factory BEFORE any Button is created
+try:
+    Device.pin_factory = RPiGPIOFactory()
+    logging.info(f"Pin factory set to: {type(Device.pin_factory)}")
+except Exception as e:
+    logging.error(f"Failed to set pin factory: {e}")
+    sys.exit(1)
+
+
+# Configure button on GPIO23 (wired to GND)
 try:
     button = Button(23, pull_up=True, bounce_time=0.01)
-    logging.info("Button initialized on GPIO25")
+    logging.info(f"Button initialized on GPIO23, pin_factory={type(button.pin_factory)}")
 except Exception as e:
     logging.error(f"Failed to initialize button: {e}")
     sys.exit(1)
