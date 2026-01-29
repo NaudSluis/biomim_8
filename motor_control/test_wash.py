@@ -50,7 +50,7 @@ def get_calibrated_postion(json_file: str):
 # ===================== Wash Cycle =====================
 
 
-def demo(x_min, y_min):
+def demo():
     """
     Performs one washing cycle and logs to json
     """
@@ -72,11 +72,15 @@ def demo(x_min, y_min):
         print(f"Servo init failed: {e}")
         manual_control.servo = None
 
-    # Use passed-in endstop Buttons if provided
-    if y_min is not None:
-        manual_control.y_min = y_min
-    if x_min is not None:
-        manual_control.x_min = x_min
+    # Initialize endstops
+    y_min = Button(manual_control.Y_MIN_PIN, pull_up=False)
+    x_min = Button(manual_control.X_MIN_PIN, pull_up=True)
+
+    y_min.when_pressed = manual_control.on_y_min_pressed
+    y_min.when_released = manual_control.on_y_min_released
+
+    x_min.when_pressed = manual_control.on_x_min_pressed
+    x_min.when_released = manual_control.on_x_min_released
 
     manual_control.running = True
 

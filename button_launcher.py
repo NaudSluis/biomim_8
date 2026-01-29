@@ -38,7 +38,6 @@ except Exception as e:
     sys.exit(1)
 
 
-
 # Configure button on GPIO23 (wired to GND)
 try:
     button = Button(23, pull_up=True, bounce_time=0.01)
@@ -47,17 +46,7 @@ except Exception as e:
     logging.error(f"Failed to initialize button: {e}")
     sys.exit(1)
 
-# Create endstop buttons and register callbacks in main thread
-from motor_control.manual_control import Y_MIN_PIN, X_MIN_PIN, on_y_min_pressed, on_y_min_released, on_x_min_pressed, on_x_min_released
-y_min = Button(Y_MIN_PIN, pull_up=False)
-x_min = Button(X_MIN_PIN, pull_up=True)
-y_min.when_pressed = on_y_min_pressed
-y_min.when_released = on_y_min_released
-x_min.when_pressed = on_x_min_pressed
-x_min.when_released = on_x_min_released
-
 is_running = False  # This acts as our "lock"
-
 
 def run_script():
     global is_running
@@ -65,10 +54,11 @@ def run_script():
     if is_running:
         logging.info("Wash already in progress. Ignoring press.")
         return
+        
     is_running = True
     logging.info("Starting wash...")
     try:
-        demo(y_min=y_min, x_min=x_min)
+        demo()
         logging.info("Demo completed successfully")
     except Exception as e:
         logging.error(f"Error running script: {e}", exc_info=True)
