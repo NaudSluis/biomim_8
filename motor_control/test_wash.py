@@ -4,7 +4,7 @@ import os
 # --- FIX PATH ---
 # Add parent directory to path so we can import 'motor_control' package
 # At the end, there were some issues with getting the button working, one of whihch was relative imports
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import json
 from motor_control import manual_control
@@ -32,14 +32,17 @@ is_running = False
 # Graceful shutdown event
 shutdown_event = threading.Event()
 
+
 def handle_shutdown(signum, frame):
     print(f"Received signal {signum}, shutting down.")
     shutdown_event.set()
+
 
 signal.signal(signal.SIGINT, handle_shutdown)
 signal.signal(signal.SIGTERM, handle_shutdown)
 
 # ===================== Calibration Data Retrieval =====================
+
 
 def get_calibrated_postion(json_file: str):
     """
@@ -68,12 +71,13 @@ def get_calibrated_postion(json_file: str):
 
 # ===================== Wash Cycle =====================
 
+
 def demo():
     """
     Performs one washing cycle and logs to json
     """
     global is_running
-    
+
     # Initialize motors
     Motor1, Motor2, pump1 = initialize_motors()
     manual_control.Motor1 = Motor1
@@ -83,7 +87,7 @@ def demo():
     # Initialize servo
     try:
         manual_control.servo = manual_control.Servo(26)
-        manual_control.servo.detach() 
+        manual_control.servo.detach()
     except Exception as e:
         print(f"Servo init failed: {e}")
         manual_control.servo = None
@@ -129,24 +133,26 @@ def demo():
             return
 
         move_to_position(0, calibrated_y)  # Move to spray position
-        pump_one_forward(duration=10)   # Spray for 10 seconds
-        move_to_position(calibrated_x, 0)   # Move to sponge position
-        rotate_sponge() # Rotate sponge
+        pump_one_forward(duration=10)  # Spray for 10 seconds
+        move_to_position(calibrated_x, 0)  # Move to sponge position
+        rotate_sponge()  # Rotate sponge
         move_to_position(-calibrated_x, 0)  # Move back to spray
         pump_one_forward(duration=10)  # Spray for another 10 seconds
-        move_to_home() # Move back to home
+        move_to_home()  # Move back to home
         move_to_position(calibrated_x_house, 0)  # Move to house position
 
     except Exception as e:
         print(f"Error during demo: {e}")
-        
+
     finally:
         manual_control.running = False
 
         # Safely stop motors
         try:
-            if "Motor1" in locals(): Motor1.Stop()
-            if "Motor2" in locals(): Motor2.Stop()
+            if "Motor1" in locals():
+                Motor1.Stop()
+            if "Motor2" in locals():
+                Motor2.Stop()
         except Exception as e:
             print(f"Error stopping motors: {e}")
 
@@ -156,18 +162,28 @@ def demo():
                 Motor1.dir_pin.close()
             if "Motor1" in locals() and hasattr(Motor1, "step_pin") and Motor1.step_pin:
                 Motor1.step_pin.close()
-            if "Motor1" in locals() and hasattr(Motor1, "enable_pin") and Motor1.enable_pin:
+            if (
+                "Motor1" in locals()
+                and hasattr(Motor1, "enable_pin")
+                and Motor1.enable_pin
+            ):
                 Motor1.enable_pin.close()
 
             if "Motor2" in locals() and hasattr(Motor2, "dir_pin") and Motor2.dir_pin:
                 Motor2.dir_pin.close()
             if "Motor2" in locals() and hasattr(Motor2, "step_pin") and Motor2.step_pin:
                 Motor2.step_pin.close()
-            if "Motor2" in locals() and hasattr(Motor2, "enable_pin") and Motor2.enable_pin:
+            if (
+                "Motor2" in locals()
+                and hasattr(Motor2, "enable_pin")
+                and Motor2.enable_pin
+            ):
                 Motor2.enable_pin.close()
 
-            if y_min: y_min.close()
-            if x_min: x_min.close()
+            if y_min:
+                y_min.close()
+            if x_min:
+                x_min.close()
         except Exception as e:
             print(f"Error cleaning up GPIO: {e}")
 
@@ -176,15 +192,15 @@ def demo():
         try:
             script_dir = os.path.dirname(os.path.abspath(__file__))
             log_path = os.path.join(script_dir, "logging.json")
-            
+
             try:
                 with open(log_path, "r") as fp:
                     logs = json.load(fp)
             except (FileNotFoundError, json.JSONDecodeError):
                 logs = []
-            
+
             logs.append({"start_time": start, "end_time": end})
-            
+
             with open(log_path, "w") as fp:
                 json.dump(logs, fp, indent=2)
         except Exception as e:
@@ -205,11 +221,11 @@ def main():
 
     def on_button_pressed():
         global is_running
-        
+
         if is_running:
             return
-        
-        is_running = True 
+
+        is_running = True
         demo_thread = threading.Thread(target=demo)
         demo_thread.start()
 
@@ -223,12 +239,14 @@ def main():
 
     try:
         import motor_control.manual_control as manual_control
+
         manual_control.running = False
     except Exception:
         pass
 
     print("Exiting now.")
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

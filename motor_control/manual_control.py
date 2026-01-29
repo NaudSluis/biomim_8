@@ -180,6 +180,7 @@ def keyboard_listener():
 # These functions perform a fixed number of steps in a given direction. The step delay is set so low that
 # it is lower than it can actually achieve, to maximize speed. 0.05 from a documentation was slower.
 
+
 def step_motor_forward():
     global Motor1
     Motor1.TurnStep(Dir="forward", steps=20, stepdelay=0.00000001)
@@ -371,7 +372,7 @@ def back_off_y_endstop():
 
 def on_x_min_pressed():
     """Handles X min endstop press event."""
-    
+
     if x_backoff_running.is_set():
         return
 
@@ -389,7 +390,7 @@ def on_x_min_released():
 
 def on_y_min_pressed():
     """Handles Y min endstop press event."""
-    
+
     if y_backoff_running.is_set():
         return
 
@@ -419,7 +420,7 @@ def start_manual_control():
     Device.pin_factory = RPiGPIOFactory()
 
     # Pull up is not the same, this is likely a hardware issue and could easily not work in the future. We did not have time to debug.
-    y_min = Button(Y_MIN_PIN, pull_up=False) 
+    y_min = Button(Y_MIN_PIN, pull_up=False)
     x_min = Button(X_MIN_PIN, pull_up=True)
 
     try:
@@ -463,7 +464,7 @@ def start_manual_control():
 
     y_min.close()
     x_min.close()
-    
+
     print("Program exited.")
 
 

@@ -71,7 +71,6 @@ def move_to_home(step_delay=0.0000001):
     manual_control.y_axis = 0
 
 
-
 # ============== Reset State ==============
 
 
@@ -185,10 +184,14 @@ def calibration_listener():
                 manual_control.continuous_left = False
                 manual_control.continuous_right = False
 
-            #Save house position and continue
+            # Save house position and continue
             elif key == "p":
                 print("Saving house position...")
-                dump_to_json(manual_control.x_axis, manual_control.y_axis, filename="motor_control/calibration_house.json")
+                dump_to_json(
+                    manual_control.x_axis,
+                    manual_control.y_axis,
+                    filename="motor_control/calibration_house.json",
+                )
 
             # Save & exit
             elif key in ("\n", "\r"):
