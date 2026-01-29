@@ -131,6 +131,7 @@ def demo():
         move_to_position(0, calibrated_y)  # Move to spray position
         pump_one_forward(duration=10)
         move_to_position(calibrated_x, 0)
+        time.sleep(5)
         rotate_sponge()
         move_to_position(-calibrated_x, 0)  # Move back to spray
         pump_one_forward(duration=10)
