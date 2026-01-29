@@ -1,3 +1,10 @@
+import sys
+import os
+
+# --- FIX PATH ---
+# Add parent directory to path so we can import 'motor_control' package
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import json
 import sys
 from motor_control import manual_control
@@ -8,7 +15,7 @@ from motor_control.manual_control import (
     rotate_sponge,
     move_to_position,
 )
-from .DRV8825 import DRV8825
+from DRV8825 import DRV8825
 import time
 import serial
 from datetime import datetime
