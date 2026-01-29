@@ -28,7 +28,7 @@ The goal of this robot is to clean the window of the Mini-DOAS as good as possib
 
 The Pi forms the basis of the system. The stepper HAT is mounted on top of the Pi, to which the NEMA17 and 28BYJ-48 are attached. In the image below you can find how the rest of the hardware should be connected to the pins. !NOTE, give some tips
 
-![RPI5 Pin layout scheme](pin_layout.png)
+![RPI5 Pin layout scheme](pin_layout_2.png)
 
 
 #### Use in pactice
