@@ -14,7 +14,7 @@ from motor_control.manual_control import (
     rotate_sponge,
     move_to_position,
 )
-from DRV8825 import DRV8825
+from .DRV8825 import DRV8825
 import time
 import serial
 from datetime import datetime
