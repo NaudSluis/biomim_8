@@ -41,6 +41,17 @@ def handle_shutdown(signum, frame):
 signal.signal(signal.SIGINT, handle_shutdown)
 signal.signal(signal.SIGTERM, handle_shutdown)
 
+# --- Logging setup ---
+import logging
+
+log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "debug.log")
+logging.basicConfig(
+    filename=log_path,
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 # ===================== Calibration Data Retrieval =====================
 
 
@@ -146,7 +157,7 @@ def demo():
 
     finally:
         manual_control.running = False
-        print("Demo finished. Setting is_running=False.")
+        logging.debug("Demo finished. Setting is_running=False.")
         is_running = False
 
 
@@ -224,13 +235,13 @@ def main():
     def on_button_pressed():
         global is_running
 
-        print(f"Button pressed. is_running={is_running}")
+        logging.debug(f"Button pressed. is_running={is_running}")
         if is_running:
-            print("Ignored: Already running.")
+            logging.debug("Ignored: Already running.")
             return
 
         is_running = True
-        print("Set is_running=True, starting demo thread.")
+        logging.debug("Set is_running=True, starting demo thread.")
         demo_thread = threading.Thread(target=demo)
         demo_thread.start()
 
