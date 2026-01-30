@@ -146,6 +146,8 @@ def demo():
 
     finally:
         manual_control.running = False
+        is_running = False
+
 
         # Safely stop motors
         try:
@@ -207,8 +209,7 @@ def demo():
             print(f"Error logging data: {e}")
 
         # Unlock allows the button to be pressed again
-        is_running = False
-
+       
 
 # --- Button setup and main loop ---
 def main():
@@ -241,10 +242,10 @@ def main():
         import motor_control.manual_control as manual_control
 
         manual_control.running = False
-        is_running = False
+        
     except Exception:
         pass
-
+    
     print("Exiting now.")
     sys.exit(0)
 
