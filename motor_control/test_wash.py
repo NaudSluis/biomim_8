@@ -146,6 +146,7 @@ def demo():
 
     finally:
         manual_control.running = False
+        print("Demo finished. Setting is_running=False.")
         is_running = False
 
 
@@ -223,10 +224,13 @@ def main():
     def on_button_pressed():
         global is_running
 
+        print(f"Button pressed. is_running={is_running}")
         if is_running:
+            print("Ignored: Already running.")
             return
 
         is_running = True
+        print("Set is_running=True, starting demo thread.")
         demo_thread = threading.Thread(target=demo)
         demo_thread.start()
 
