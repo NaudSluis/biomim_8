@@ -241,6 +241,7 @@ def main():
         import motor_control.manual_control as manual_control
 
         manual_control.running = False
+        is_running = False
     except Exception:
         pass
 
